@@ -190,3 +190,7 @@
   outline-offset: -3px;
   background-color: var(--color-accent);
 }
+
+#lovable-badge {
+  display: none !important;
+}
