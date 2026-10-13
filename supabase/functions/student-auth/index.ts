@@ -33,7 +33,7 @@ Deno.serve(async (req: Request) => {
   const fullName = typeof body.full_name === "string" ? body.full_name.trim().slice(0, 120) : "";
 
   if (!mode) return reply(400, { error: "Operação inválida." });
-  if (!identifier || identifier.length > 120 || /\\s/.test(identifier)) return reply(400, { error: "Informe um identificador sem espaços (pode ser e-mail ou nome de usuário)." });
+  if (!identifier || identifier.length > 120 || /\s/.test(identifier)) return reply(400, { error: "Informe um identificador de aluno sem espaços (pode ser e-mail ou nome de usuário)." });
   if (password.length < 6 || password.length > 128) return reply(400, { error: "A senha deve ter entre 6 e 128 caracteres." });
   if (mode === "signup" && !fullName) return reply(400, { error: "Informe o nome completo." });
 
