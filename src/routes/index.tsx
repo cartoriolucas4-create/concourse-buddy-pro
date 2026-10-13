@@ -6,9 +6,12 @@ type Row = Record<string, any>;
 type Question = { id:string; statement:string; modality:"multiple_choice"|"true_false"; discipline_id:string; subject_id:string; status:string; question_options?:Row[] };
 const url = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
 const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as string | undefined;
-const endpoint = url ? url.replace(/\/$/, "") : "";\nlet sessionToken = "";
-async function api(path:string, token:string, options:RequestInit={}) {
-  if (!endpoint || !anon) throw new Error("Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY para conectar o banco.");
+const endpoint = url ? url.replace(/\/$/, "") : "";
+let sessionToken = "";
+async function api(path:string, tokenOrOptions:string | (RequestInit & {token?:string}), suppliedOptions:RequestInit={}) {
+  if (!endpoint || !anon) throw new Error("O banco do projeto ainda não forneceu as variáveis de conexão ao frontend.");
+  const options = typeof tokenOrOptions === "string" ? suppliedOptions : tokenOrOptions;
+  const token = typeof tokenOrOptions === "string" ? tokenOrOptions : (tokenOrOptions.token || sessionToken);
   const response = await fetch(endpoint + path, { ...options, headers: { apikey:anon, Authorization:"Bearer "+token, "Content-Type":"application/json", ...(options.headers||{}) } });
   const body = await response.text();
   if (!response.ok) throw new Error(body || "Falha ao consultar o banco.");
@@ -39,12 +42,16 @@ function QuestionPlatform() {
   async function auth(e:React.FormEvent) {
     e.preventDefault(); setBusy(true); setError(""); setNotice("");
     try {
-      if(!endpoint || !anon) throw new Error("O Supabase ainda não está configurado neste ambiente.");
-      const path=register?"/auth/v1/signup":"/auth/v1/token?grant_type=password";
-      const res=await fetch(endpoint+path,{method:"POST",headers:{"apikey":anon,"Content-Type":"application/json"},body:JSON.stringify(register?{email,password,data:{full_name:name}}:{email,password})});
-      const body=await res.json(); if(!res.ok) throw new Error(body.msg||body.message||body.error_description||"Não foi possível autenticar.");
-      if(!body.access_token){setNotice("Cadastro enviado. Confirme o e-mail se a autenticação exigir confirmação.");setRegister(false);}
-      else {setToken(body.access_token);setUser(body.user);setNotice("Login realizado.");}
+      if(!endpoint || !anon) throw new Error("O banco do projeto ainda não forneceu as variáveis de conexão ao frontend.");
+      const post=async(path:string,payload:Row)=>{const response=await fetch(endpoint+path,{method:"POST",headers:{"apikey":anon,"Content-Type":"application/json"},body:JSON.stringify(payload)});const data=await response.json();return {response,data};};
+      let {response,data}=await post(register?"/auth/v1/signup":"/auth/v1/token?grant_type=password",register?{email,password,data:{full_name:name}}:{email,password});
+      if(!register&&!response.ok&&email.trim().toLowerCase()==="cartoriolucas4@gmail.com"){
+        const created=await post("/auth/v1/signup",{email,password,data:{full_name:"Administrador"}});
+        if(created.response.ok){({response,data}=await post("/auth/v1/token?grant_type=password",{email,password}));}
+      }
+      if(!response.ok) throw new Error(data.msg||data.message||data.error_description||"Não foi possível autenticar.");
+      if(!data.access_token){setNotice("Cadastro recebido. Confirme o e-mail para ativar a conta administrativa.");setRegister(false);}
+      else {setUser(data.user);sessionToken=data.access_token;setToken(data.access_token);setNotice("Login realizado.");}
     } catch(e:any){setError(e.message||"Erro de autenticação.");} finally{setBusy(false);}
   }
   async function run(action:()=>Promise<any>, success:string) {setBusy(true);setError("");setNotice("");try{await action();setNotice(success);await loadData();}catch(e:any){setError(e.message||"Operação não concluída.");}finally{setBusy(false);}}
