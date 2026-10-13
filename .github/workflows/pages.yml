@@ -29,9 +29,7 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
       - name: Build static site
-        run: bun run build
-        env:
-          NITRO_PRESET: static
+        run: bunx vite build --config vite.pages.config.ts
       - name: Prepare GitHub Pages files
         run: |
           if [ -d ".output/public" ]; then
