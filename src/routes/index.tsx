@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { BookOpen, ShieldCheck, Upload, Users, LogOut, CheckCircle2, CircleHelp, BarChart3, Settings, Search, Plus, Copy, Layers, ClipboardList, Trash2, Database } from "lucide-react";
+import { BookOpen, ShieldCheck, Upload, Users, LogOut, CheckCircle2, CircleHelp, BarChart3, Settings, Search, Plus, Copy, Layers, ClipboardList, Trash2, Database, ExternalLink } from "lucide-react";
 
 type Row = Record<string, any>;
 type Question = { id:string; statement:string; modality:"multiple_choice"|"true_false"; discipline_id:string; subject_id:string; status:string; question_options?:Row[] };
