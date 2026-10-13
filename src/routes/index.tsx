@@ -38,7 +38,22 @@ function QuestionPlatform() {
     ]);
     setProfile(p?.[0]||null); setDisciplines(d||[]); setSubjects(s||[]); setQuestions(q||[]); setAttempts(a||[]);
   }
-  useEffect(()=>{ sessionToken=token; if(token&&user?.id){loadData().catch(e=>setError(e.message));} },[token,user?.id]);
+  useEffect(()=>{ 
+    const saved=window.localStorage.getItem("concurso_central_access_token");
+    if(saved&&endpoint&&anon){
+      sessionToken=saved;
+      fetch(endpoint+"/auth/v1/user",{headers:{apikey:anon,Authorization:"Bearer "+saved}})
+        .then(async r=>{if(!r.ok)throw new Error("Sessão expirada");return r.json();})
+        .then(u=>{setUser(u);setToken(saved);})
+        .catch(()=>{window.localStorage.removeItem("concurso_central_access_token");sessionToken="";});
+    }
+  },[]);
+  useEffect(()=>{ 
+    sessionToken=token;
+    if(token) window.localStorage.setItem("concurso_central_access_token",token);
+    else window.localStorage.removeItem("concurso_central_access_token");
+    if(token&&user?.id){loadData().catch(e=>setError(e.message));}
+  },[token,user?.id]);
   async function auth(e:React.FormEvent) {
     e.preventDefault(); setBusy(true); setError(""); setNotice("");
     try {
