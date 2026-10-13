@@ -30,7 +30,7 @@ async function api(path:string, tokenOrOptions:string | (RequestInit & {token?:s
   return body?JSON.parse(body):null;
 }
 export const Route = createFileRoute("/")({ component: QuestionPlatform });
-function QuestionPlatform() {
+export function QuestionPlatform() {
   const [token,setToken]=useState(""); const [user,setUser]=useState<Row|null>(null); const [profile,setProfile]=useState<Row|null>(null);
   const [email,setEmail]=useState(""); const [password,setPassword]=useState(""); const [name,setName]=useState(""); const [register,setRegister]=useState(false);
   const [tab,setTab]=useState("questions"); const [notice,setNotice]=useState(""); const [error,setError]=useState(""); const [busy,setBusy]=useState(false);
