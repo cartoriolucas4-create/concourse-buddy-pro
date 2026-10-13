@@ -7,8 +7,8 @@ type Question = { id:string; statement:string; modality:"multiple_choice"|"true_
 // Pin auth to the verified Supabase project for Concurso Central. Environment values in
 // some previews can point at a different project, which causes signup_disabled even when
 // signups are enabled in the dashboard the owner is viewing.
-const endpoint = "https://gojjlppvdzijujrqsqww.supabase.co";
-const anon = "sb_publishable_saC2eSfYJt7LxvJFKgodIw_FQrZUBTS";
+const endpoint = "https://rzvzsinknjcybmqtlmuv.supabase.co";
+const anon = "sb_publishable_wpUspE2v_U3tItpOgt-eFQ_OqDiHBb0";
 let sessionToken = "";
 async function api(path:string, tokenOrOptions:string | (RequestInit & {token?:string}), suppliedOptions:RequestInit={}) {
   if (!endpoint || !anon) throw new Error("Conexão com o Supabase ausente: configure VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY nas variáveis do projeto.");
