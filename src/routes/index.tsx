@@ -38,7 +38,7 @@ function QuestionPlatform() {
     ]);
     setProfile(p?.[0]||null); setDisciplines(d||[]); setSubjects(s||[]); setQuestions(q||[]); setAttempts(a||[]);
   }
-  useEffect(()=>{ sessionToken=token; if(token){loadData().catch(e=>setError(e.message));} },[token]);
+  useEffect(()=>{ sessionToken=token; if(token&&user?.id){loadData().catch(e=>setError(e.message));} },[token,user?.id]);
   async function auth(e:React.FormEvent) {
     e.preventDefault(); setBusy(true); setError(""); setNotice("");
     try {
