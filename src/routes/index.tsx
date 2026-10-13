@@ -67,13 +67,16 @@ function QuestionPlatform() {
       // The login field acts as a student identifier, not a deliverable email address.
       // Map it deterministically to a synthetic address so students can use nicknames
       // or non-email identifiers consistently for both signup and login.
-      const authEmail="aluno-"+Array.from(identifier).map(ch=>ch.codePointAt(0)!.toString(16)).join("-")+"@alunos.concurso-central.app";
+      const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(identifier));
+      const authId=Array.from(new Uint8Array(digest)).map(byte=>byte.toString(16).padStart(2,"0")).join("").slice(0,48);
+      const authEmail="cc-"+authId+"@alunos.concurso-central.app";
       const {response,data}=await post(register?"/auth/v1/signup":"/auth/v1/token?grant_type=password",register?{email:authEmail,password,data:{full_name:name.trim(),student_identifier:identifier}}:{email:authEmail,password});
       if(!response.ok) {
         const code=String(data.code||data.error_code||"");
         const message=String(data.msg||data.message||data.error_description||"");
         if(code==="signup_disabled"||/email signups are disabled/i.test(message)) throw new Error("O cadastro por e-mail está desativado nas configurações de autenticação do Supabase. É necessário habilitar novos cadastros no projeto conectado; o site não consegue ativar essa opção sozinho.");
-        if(code==="user_already_exists"||/already registered|user already exists/i.test(message)) throw new Error("Este e-mail já possui cadastro. Volte para Entrar ou use a recuperação de senha.");
+        if(code==="over_email_send_rate_limit"||/email rate limit exceeded|rate limit.*email/i.test(message)) throw new Error("O Supabase limitou temporariamente o envio de e-mails de confirmação. Aguarde antes de tentar novamente. Para usar identificadores de aluno sem e-mail real, o provedor precisa ter a confirmação de e-mail desativada no painel do Supabase.");
+        if(code==="user_already_exists"||/already registered|user already exists/i.test(message)) throw new Error("Este identificador já possui cadastro. Volte para Entrar e use a mesma senha.");
         if(/invalid login credentials/i.test(message)) throw new Error("E-mail ou senha incorretos. Confira os dados e tente novamente.");
         if(/email not confirmed/i.test(message)) throw new Error("Confirme seu e-mail pelo link enviado antes de entrar.");
         throw new Error(message||"Não foi possível concluir a autenticação. Tente novamente.");
