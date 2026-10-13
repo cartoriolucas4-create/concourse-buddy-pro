@@ -10,33 +10,167 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ConcursosRouteImport } from './routes/concursos'
+import { Route as ConfigurarRouteImport } from './routes/configurar'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as EditalRouteImport } from './routes/edital'
+import { Route as HistoricoRouteImport } from './routes/historico'
+import { Route as LembretesRouteImport } from './routes/lembretes'
+import { Route as MateriasRouteImport } from './routes/materias'
+import { Route as PendenciasRouteImport } from './routes/pendencias'
+import { Route as PlanejamentoRouteImport } from './routes/planejamento'
+import { Route as RevisoesRouteImport } from './routes/revisoes'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConcursosRoute = ConcursosRouteImport.update({
+  id: '/concursos',
+  path: '/concursos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfigurarRoute = ConfigurarRouteImport.update({
+  id: '/configurar',
+  path: '/configurar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EditalRoute = EditalRouteImport.update({
+  id: '/edital',
+  path: '/edital',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoricoRoute = HistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LembretesRoute = LembretesRouteImport.update({
+  id: '/lembretes',
+  path: '/lembretes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MateriasRoute = MateriasRouteImport.update({
+  id: '/materias',
+  path: '/materias',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PendenciasRoute = PendenciasRouteImport.update({
+  id: '/pendencias',
+  path: '/pendencias',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanejamentoRoute = PlanejamentoRouteImport.update({
+  id: '/planejamento',
+  path: '/planejamento',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RevisoesRoute = RevisoesRouteImport.update({
+  id: '/revisoes',
+  path: '/revisoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/concursos': typeof ConcursosRoute
+  '/configurar': typeof ConfigurarRoute
+  '/dashboard': typeof DashboardRoute
+  '/edital': typeof EditalRoute
+  '/historico': typeof HistoricoRoute
+  '/lembretes': typeof LembretesRoute
+  '/materias': typeof MateriasRoute
+  '/pendencias': typeof PendenciasRoute
+  '/planejamento': typeof PlanejamentoRoute
+  '/revisoes': typeof RevisoesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/concursos': typeof ConcursosRoute
+  '/configurar': typeof ConfigurarRoute
+  '/dashboard': typeof DashboardRoute
+  '/edital': typeof EditalRoute
+  '/historico': typeof HistoricoRoute
+  '/lembretes': typeof LembretesRoute
+  '/materias': typeof MateriasRoute
+  '/pendencias': typeof PendenciasRoute
+  '/planejamento': typeof PlanejamentoRoute
+  '/revisoes': typeof RevisoesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/concursos': typeof ConcursosRoute
+  '/configurar': typeof ConfigurarRoute
+  '/dashboard': typeof DashboardRoute
+  '/edital': typeof EditalRoute
+  '/historico': typeof HistoricoRoute
+  '/lembretes': typeof LembretesRoute
+  '/materias': typeof MateriasRoute
+  '/pendencias': typeof PendenciasRoute
+  '/planejamento': typeof PlanejamentoRoute
+  '/revisoes': typeof RevisoesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/concursos'
+    | '/configurar'
+    | '/dashboard'
+    | '/edital'
+    | '/historico'
+    | '/lembretes'
+    | '/materias'
+    | '/pendencias'
+    | '/planejamento'
+    | '/revisoes'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/concursos'
+    | '/configurar'
+    | '/dashboard'
+    | '/edital'
+    | '/historico'
+    | '/lembretes'
+    | '/materias'
+    | '/pendencias'
+    | '/planejamento'
+    | '/revisoes'
+  id:
+    | '__root__'
+    | '/'
+    | '/concursos'
+    | '/configurar'
+    | '/dashboard'
+    | '/edital'
+    | '/historico'
+    | '/lembretes'
+    | '/materias'
+    | '/pendencias'
+    | '/planejamento'
+    | '/revisoes'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ConcursosRoute: typeof ConcursosRoute
+  ConfigurarRoute: typeof ConfigurarRoute
+  DashboardRoute: typeof DashboardRoute
+  EditalRoute: typeof EditalRoute
+  HistoricoRoute: typeof HistoricoRoute
+  LembretesRoute: typeof LembretesRoute
+  MateriasRoute: typeof MateriasRoute
+  PendenciasRoute: typeof PendenciasRoute
+  PlanejamentoRoute: typeof PlanejamentoRoute
+  RevisoesRoute: typeof RevisoesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +182,91 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/concursos': {
+      id: '/concursos'
+      path: '/concursos'
+      fullPath: '/concursos'
+      preLoaderRoute: typeof ConcursosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configurar': {
+      id: '/configurar'
+      path: '/configurar'
+      fullPath: '/configurar'
+      preLoaderRoute: typeof ConfigurarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/edital': {
+      id: '/edital'
+      path: '/edital'
+      fullPath: '/edital'
+      preLoaderRoute: typeof EditalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/historico': {
+      id: '/historico'
+      path: '/historico'
+      fullPath: '/historico'
+      preLoaderRoute: typeof HistoricoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lembretes': {
+      id: '/lembretes'
+      path: '/lembretes'
+      fullPath: '/lembretes'
+      preLoaderRoute: typeof LembretesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/materias': {
+      id: '/materias'
+      path: '/materias'
+      fullPath: '/materias'
+      preLoaderRoute: typeof MateriasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pendencias': {
+      id: '/pendencias'
+      path: '/pendencias'
+      fullPath: '/pendencias'
+      preLoaderRoute: typeof PendenciasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/planejamento': {
+      id: '/planejamento'
+      path: '/planejamento'
+      fullPath: '/planejamento'
+      preLoaderRoute: typeof PlanejamentoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/revisoes': {
+      id: '/revisoes'
+      path: '/revisoes'
+      fullPath: '/revisoes'
+      preLoaderRoute: typeof RevisoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ConcursosRoute: ConcursosRoute,
+  ConfigurarRoute: ConfigurarRoute,
+  DashboardRoute: DashboardRoute,
+  EditalRoute: EditalRoute,
+  HistoricoRoute: HistoricoRoute,
+  LembretesRoute: LembretesRoute,
+  MateriasRoute: MateriasRoute,
+  PendenciasRoute: PendenciasRoute,
+  PlanejamentoRoute: PlanejamentoRoute,
+  RevisoesRoute: RevisoesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
