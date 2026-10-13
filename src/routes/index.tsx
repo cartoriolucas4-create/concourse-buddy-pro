@@ -61,7 +61,14 @@ function QuestionPlatform() {
     try {
       if(!endpoint || !anon) throw new Error("O banco do projeto ainda não forneceu as variáveis de conexão ao frontend.");
       const post=async(path:string,payload:Row)=>{const response=await fetch(endpoint+path,{method:"POST",headers:{"apikey":anon,"Authorization":"Bearer "+anon,"Content-Type":"application/json"},body:JSON.stringify(payload)});const raw=await response.text();let data:Row={};try{data=raw?JSON.parse(raw):{};}catch{data={message:raw};}return {response,data};};
-      const {response,data}=await post(register?"/auth/v1/signup":"/auth/v1/token?grant_type=password",register?{email:email.trim(),password,data:{full_name:name.trim()}}:{email:email.trim(),password});
+      const identifier=email.trim().normalize("NFKC").toLowerCase();
+      if(!identifier || /\\s/.test(identifier)) throw new Error("Informe um identificador sem espaços.");
+      if(!password) throw new Error("Informe uma senha.");
+      // The login field acts as a student identifier, not a deliverable email address.
+      // Map it deterministically to a synthetic address so students can use nicknames
+      // or non-email identifiers consistently for both signup and login.
+      const authEmail="aluno-"+Array.from(identifier).map(ch=>ch.codePointAt(0)!.toString(16)).join("-")+"@alunos.concurso-central.app";
+      const {response,data}=await post(register?"/auth/v1/signup":"/auth/v1/token?grant_type=password",register?{email:authEmail,password,data:{full_name:name.trim(),student_identifier:identifier}}:{email:authEmail,password});
       if(!response.ok) {
         const code=String(data.code||data.error_code||"");
         const message=String(data.msg||data.message||data.error_description||"");
