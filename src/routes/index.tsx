@@ -44,11 +44,7 @@ function QuestionPlatform() {
     try {
       if(!endpoint || !anon) throw new Error("O banco do projeto ainda não forneceu as variáveis de conexão ao frontend.");
       const post=async(path:string,payload:Row)=>{const response=await fetch(endpoint+path,{method:"POST",headers:{"apikey":anon,"Content-Type":"application/json"},body:JSON.stringify(payload)});const data=await response.json();return {response,data};};
-      let {response,data}=await post(register?"/auth/v1/signup":"/auth/v1/token?grant_type=password",register?{email,password,data:{full_name:name}}:{email,password});
-      if(!register&&!response.ok&&email.trim().toLowerCase()==="cartoriolucas4@gmail.com"){
-        const created=await post("/auth/v1/signup",{email,password,data:{full_name:"Administrador"}});
-        if(created.response.ok){({response,data}=await post("/auth/v1/token?grant_type=password",{email,password}));}
-      }
+      const {response,data}=await post(register?"/auth/v1/signup":"/auth/v1/token?grant_type=password",register?{email,password,data:{full_name:name}}:{email,password});
       if(!response.ok) throw new Error(data.msg||data.message||data.error_description||"Não foi possível autenticar.");
       if(!data.access_token){setNotice("Cadastro recebido. Confirme o e-mail para ativar a conta administrativa.");setRegister(false);}
       else {setUser(data.user);sessionToken=data.access_token;setToken(data.access_token);setNotice("Login realizado.");}
