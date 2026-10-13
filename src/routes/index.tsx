@@ -1,290 +1,68 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { Play, RotateCcw, BellRing, ClipboardList, CheckCircle2 } from "lucide-react";
-import { AppLayout, Bar, Panel, Stat } from "@/components/AppLayout";
-import { StudySessionDialog, type SessionTarget } from "@/components/StudySessionDialog";
-import { Button } from "@/components/ui/button";
-import { useStore } from "@/lib/store";
-import {
-  daysToExam,
-  minutesOnDate,
-  pendencias,
-  plannedForDate,
-  revisoesForDate,
-  sessionsForDate,
-} from "@/lib/derive";
-import { dayIdForDate, fmtMinutes, todayISO } from "@/lib/study";
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { BookOpen, ShieldCheck, Upload, Users, LogOut, CheckCircle2, CircleHelp, BarChart3, Settings, Search, Plus, Copy } from "lucide-react";
 
-export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Hoje — Central de Estudos para Concurseiro" },
-      { name: "description", content: "Veja o que está planejado para hoje e comece a estudar." },
-      { property: "og:title", content: "Hoje — Central de Estudos" },
-      { property: "og:description", content: "Seu plano de estudos do dia em um só lugar." },
-    ],
-  }),
-  component: Hoje,
-});
-
-function Hoje() {
-  const { state, update } = useStore();
-  const [target, setTarget] = useState<SessionTarget | null>(null);
-  const today = todayISO();
-  const dayId = dayIdForDate(today, state);
-  const cycleMode = state.cycle.enabled;
-  const planned = plannedForDate(state, today);
-  const sessions = sessionsForDate(state, today);
-  const studied = minutesOnDate(state, today);
-  const goal = state.settings.dailyGoalHours * 60;
-  const pct = goal ? Math.round((studied / goal) * 100) : 0;
-  const doneSubjects = planned.filter((p) => sessions.some((s) => s.subjectId === p.item.subjectId)).length;
-  const revs = revisoesForDate(state, today);
-  const pend = pendencias(state);
-  const remindersToday = state.reminders.filter((r) => !r.done && r.date === today);
-  const nextExam = state.concursos
-    .filter((c) => (state.activeConcursoId === "all" || c.id === state.activeConcursoId) && c.examDate)
-    .map((c) => ({ c, d: daysToExam(c.examDate)! }))
-    .filter((x) => x.d >= 0)
-    .sort((a, b) => a.d - b.d)[0];
-
-  const cycleItems = state.cycle.items;
-  const cycleCurrent = cycleItems[state.cycle.currentIndex % Math.max(1, cycleItems.length)];
-
-  const dateLabel = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
-
-  return (
-    <AppLayout title="Hoje" subtitle={`${dateLabel}${dayId && !cycleMode ? ` · ${dayId}` : ""}`}>
-      {!state.settings.configured && (
-        <div className="panel mb-6 flex flex-wrap items-center justify-between gap-3 border-primary/40 bg-accent p-4">
-          <p className="text-sm">
-            <strong>Configure sua central:</strong> estrutura dos dias, matérias por dia e metas.
-          </p>
-          <Button asChild size="sm">
-            <Link to="/configurar">Configurar minha central</Link>
-          </Button>
-        </div>
-      )}
-
-      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-        <div className="space-y-6">
-          <Panel title={cycleMode ? "Próximo do ciclo" : "Planejado para hoje"}>
-            {cycleMode ? (
-              cycleCurrent ? (
-                (() => {
-                  const sub = state.subjects.find((s) => s.id === cycleCurrent.subjectId);
-                  if (!sub) return null;
-                  return (
-                    <SubjectRow
-                      color={sub.color}
-                      name={sub.name}
-                      minutes={cycleCurrent.minutes}
-                      done={false}
-                      paused={state.cycle.paused}
-                      onStart={() => setTarget({ subject: sub, plannedMinutes: cycleCurrent.minutes })}
-                      extra={
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() =>
-                            update((d) => {
-                              d.cycle.currentIndex = (d.cycle.currentIndex + 1) % d.cycle.items.length;
-                            })
-                          }
-                        >
-                          Avançar
-                        </Button>
-                      }
-                    />
-                  );
-                })()
-              ) : (
-                <Empty text="Seu ciclo está vazio." />
-              )
-            ) : planned.length === 0 ? (
-              <Empty text="Nada planejado para hoje. Dia livre — ou estude algo avulso." />
-            ) : (
-              <ul className="divide-y divide-border">
-                {planned.map((p) =>
-                  p.subject ? (
-                    <SubjectRow
-                      key={p.key}
-                      color={p.subject.color}
-                      name={p.subject.name}
-                      minutes={p.item.minutes}
-                      done={sessions.some((s) => s.subjectId === p.item.subjectId)}
-                      onStart={() =>
-                        setTarget({ subject: p.subject!, plannedMinutes: p.item.minutes, plannedDayId: p.dayId })
-                      }
-                    />
-                  ) : null,
-                )}
-              </ul>
-            )}
-          </Panel>
-
-          <Panel title="Estudado hoje">
-            {sessions.length === 0 ? (
-              <Empty text="Nenhum registro ainda." />
-            ) : (
-              <ul className="space-y-2 text-sm">
-                {sessions.map((s) => {
-                  const sub = state.subjects.find((x) => x.id === s.subjectId);
-                  return (
-                    <li key={s.id} className="flex items-center gap-3">
-                      <span className="size-2.5 rounded-full" style={{ backgroundColor: sub?.color }} />
-                      <span className="font-medium">{sub?.name}</span>
-                      <span className="text-muted-foreground">{s.topic}</span>
-                      <span className="ml-auto tabular-nums">{fmtMinutes(s.minutes)}</span>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-            <div className="mt-4 flex flex-wrap gap-2">
-              {state.subjects
-                .filter((s) => s.active)
-                .map((s) => (
-                  <Button key={s.id} size="sm" variant="outline" onClick={() => setTarget({ subject: s })}>
-                    <span className="size-2 rounded-full" style={{ backgroundColor: s.color }} />
-                    {s.name}
-                  </Button>
-                ))}
-            </div>
-          </Panel>
-        </div>
-
-        <div className="space-y-4">
-          <Panel title="Resumo do dia">
-            <div className="flex items-end justify-between">
-              <p className="font-display text-3xl font-semibold">{fmtMinutes(studied)}</p>
-              <p className="text-sm text-muted-foreground">meta {fmtMinutes(goal)}</p>
-            </div>
-            <div className="mt-3">
-              <Bar percent={pct} />
-            </div>
-            <p className="mt-1 text-xs text-muted-foreground">{pct}% da meta</p>
-            <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
-              <Mini label="Matérias" value={`${doneSubjects}/${planned.length}`} />
-              <Mini label="Pendências" value={`${pend.length}`} />
-              <Mini label="Revisões" value={`${revs.length}`} />
-              <Mini label="Lembretes" value={`${remindersToday.length}`} />
-            </dl>
-          </Panel>
-
-          {nextExam && (
-            <Stat
-              label={nextExam.c.name}
-              value={`Faltam ${nextExam.d} dias`}
-              hint={`Prova em ${new Date(nextExam.c.examDate + "T12:00").toLocaleDateString("pt-BR")}`}
-              tone="primary"
-            />
-          )}
-
-          <Panel title="Revisões para hoje" right={<RotateCcw className="size-4 text-muted-foreground" />}>
-            {revs.length === 0 ? (
-              <Empty text="Nenhuma revisão hoje." />
-            ) : (
-              <ul className="space-y-2 text-sm">
-                {revs.map((r) => {
-                  const sub = state.subjects.find((x) => x.id === r.subjectId);
-                  return (
-                    <li key={r.id} className="flex items-center gap-2">
-                      <span className="size-2 rounded-full" style={{ backgroundColor: sub?.color }} />
-                      <span className="truncate">{sub?.name} — {r.topic}</span>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="ml-auto size-7"
-                        aria-label="Marcar revisão feita"
-                        onClick={() =>
-                          update((d) => {
-                            const x = d.revisoes.find((y) => y.id === r.id);
-                            if (x) x.done = true;
-                          })
-                        }
-                      >
-                        <CheckCircle2 className="size-4" />
-                      </Button>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </Panel>
-
-          <Panel title="Lembretes de hoje" right={<BellRing className="size-4 text-muted-foreground" />}>
-            {remindersToday.length === 0 ? (
-              <Empty text="Sem lembretes hoje." />
-            ) : (
-              <ul className="space-y-1 text-sm">
-                {remindersToday.map((r) => (
-                  <li key={r.id}>
-                    {r.time && <span className="mr-2 tabular-nums text-muted-foreground">{r.time}</span>}
-                    {r.title}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Panel>
-
-          {pend.length > 0 && (
-            <Button asChild variant="outline" className="w-full">
-              <Link to="/pendencias">
-                <ClipboardList className="size-4" /> Ver {pend.length} pendências
-              </Link>
-            </Button>
-          )}
-        </div>
-      </div>
-
-      <StudySessionDialog target={target} onClose={() => setTarget(null)} />
-    </AppLayout>
-  );
+type Row = Record<string, any>;
+type Question = { id:string; statement:string; modality:"multiple_choice"|"true_false"; discipline_id:string; subject_id:string; status:string; question_options?:Row[] };
+const url = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
+const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as string | undefined;
+const endpoint = url ? url.replace(/\/$/, "") : "";
+async function api(path:string, token:string, options:RequestInit={}) {
+  if (!endpoint || !anon) throw new Error("Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY para conectar o banco.");
+  const response = await fetch(endpoint + path, { ...options, headers: { apikey:anon, Authorization:"Bearer "+token, "Content-Type":"application/json", ...(options.headers||{}) } });
+  const body = await response.text();
+  if (!response.ok) throw new Error(body || "Falha ao consultar o banco.");
+  return body ? JSON.parse(body) : null;
 }
-
-function SubjectRow({
-  color,
-  name,
-  minutes,
-  done,
-  paused,
-  onStart,
-  extra,
-}: {
-  color: string;
-  name: string;
-  minutes: number;
-  done: boolean;
-  paused?: boolean;
-  onStart: () => void;
-  extra?: React.ReactNode;
-}) {
-  return (
-    <li className="flex items-center gap-4 py-3">
-      <span className="h-10 w-1.5 rounded-full" style={{ backgroundColor: color }} />
-      <div className="min-w-0 flex-1">
-        <p className="font-display font-semibold">{name}</p>
-        <p className="text-xs text-muted-foreground">Tempo planejado: {fmtMinutes(minutes)}</p>
-      </div>
-      {done && <span className="rounded-full bg-success/15 px-2 py-0.5 text-xs text-success">Realizado</span>}
-      {extra}
-      <Button size="sm" onClick={onStart} disabled={paused}>
-        <Play className="size-4" /> {paused ? "Ciclo pausado" : "Iniciar estudo"}
-      </Button>
-    </li>
-  );
-}
-
-function Mini({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg bg-muted/60 px-3 py-2">
-      <dt className="text-[11px] text-muted-foreground">{label}</dt>
-      <dd className="font-display text-lg font-semibold">{value}</dd>
-    </div>
-  );
-}
-
-function Empty({ text }: { text: string }) {
-  return <p className="py-4 text-sm text-muted-foreground">{text}</p>;
+export const Route = createFileRoute("/")({ component: QuestionPlatform });
+function QuestionPlatform() {
+  const [token,setToken]=useState(""); const [user,setUser]=useState<Row|null>(null); const [profile,setProfile]=useState<Row|null>(null);
+  const [email,setEmail]=useState(""); const [password,setPassword]=useState(""); const [name,setName]=useState(""); const [register,setRegister]=useState(false);
+  const [tab,setTab]=useState("questions"); const [notice,setNotice]=useState(""); const [error,setError]=useState(""); const [busy,setBusy]=useState(false);
+  const [questions,setQuestions]=useState<Question[]>([]); const [disciplines,setDisciplines]=useState<Row[]>([]); const [subjects,setSubjects]=useState<Row[]>([]); const [attempts,setAttempts]=useState<Row[]>([]);
+  const [discipline,setDiscipline]=useState(""); const [subject,setSubject]=useState(""); const [modality,setModality]=useState("all"); const [status,setStatus]=useState("all");
+  const [activeQuestion,setActiveQuestion]=useState<Question|null>(null); const [choice,setChoice]=useState(""); const [result,setResult]=useState<Row|null>(null);
+  const [newDiscipline,setNewDiscipline]=useState(""); const [newSubject,setNewSubject]=useState(""); const [subjectDiscipline,setSubjectDiscipline]=useState("");
+  const [json,setJson]=useState(""); const [batchDiscipline,setBatchDiscipline]=useState(""); const [batchSubject,setBatchSubject]=useState(""); const [preview,setPreview]=useState<Row[]>([]);
+  const [promptText,setPromptText]=useState("Você é um assistente especializado em estruturar questões autorais para concursos. Preserve integralmente enunciados, alternativas, gabaritos e comentários. Não invente informações. Retorne somente JSON válido no formato {\"versao\":1,\"questoes\":[{\"id_origem\":\"Q001\",\"modalidade\":\"multipla_escolha\",\"enunciado\":\"...\",\"alternativas\":[{\"letra\":\"A\",\"texto\":\"...\"}],\"gabarito\":\"A\",\"comentarios\":[],\"referencia\":\"\",\"problemas\":[]}]}. Se faltar gabarito use null e registre o problema.");
+  const isAdmin=profile?.role==="admin" && !profile?.blocked;
+  async function loadData(t=token) {
+    const [p,d,s,q,a]=await Promise.all([
+      api("/rest/v1/profiles?select=*&limit=1",t),api("/rest/v1/disciplines?select=*&active=eq.true&order=name",t),
+      api("/rest/v1/subjects?select=*&active=eq.true&order=name",t),
+      api("/rest/v1/questions?select=id,statement,modality,discipline_id,subject_id,status,question_options(id,option_key,option_text,position)&status=eq.published&order=created_at",t),
+      api("/rest/v1/question_attempts?select=*&order=created_at.desc",t)
+    ]);
+    setProfile(p?.[0]||null); setDisciplines(d||[]); setSubjects(s||[]); setQuestions(q||[]); setAttempts(a||[]);
+  }
+  useEffect(()=>{ if(token){loadData().catch(e=>setError(e.message));} },[token]);
+  async function auth(e:React.FormEvent) {
+    e.preventDefault(); setBusy(true); setError(""); setNotice("");
+    try {
+      if(!endpoint || !anon) throw new Error("O Supabase ainda não está configurado neste ambiente.");
+      const path=register?"/auth/v1/signup":"/auth/v1/token?grant_type=password";
+      const res=await fetch(endpoint+path,{method:"POST",headers:{"apikey":anon,"Content-Type":"application/json"},body:JSON.stringify(register?{email,password,data:{full_name:name}}:{email,password})});
+      const body=await res.json(); if(!res.ok) throw new Error(body.msg||body.message||body.error_description||"Não foi possível autenticar.");
+      if(!body.access_token){setNotice("Cadastro enviado. Confirme o e-mail se a autenticação exigir confirmação.");setRegister(false);}
+      else {setToken(body.access_token);setUser(body.user);setNotice("Login realizado.");}
+    } catch(e:any){setError(e.message||"Erro de autenticação.");} finally{setBusy(false);}
+  }
+  async function run(action:()=>Promise<any>, success:string) {setBusy(true);setError("");setNotice("");try{await action();setNotice(success);await loadData();}catch(e:any){setError(e.message||"Operação não concluída.");}finally{setBusy(false);}}
+  async function addDiscipline(){if(!newDiscipline.trim())return;await run(async()=>{await api("/rest/v1/disciplines",{token,method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({name:newDiscipline.trim()})});setNewDiscipline("");},"Disciplina cadastrada.");}
+  async function addSubject(){if(!newSubject.trim()||!subjectDiscipline)return;await run(async()=>{await api("/rest/v1/subjects",{token,method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({name:newSubject.trim(),discipline_id:subjectDiscipline})});setNewSubject("");},"Assunto cadastrado.");}
+  function validateBatch(){setError("");setNotice("");try{const data=JSON.parse(json);const list=Array.isArray(data)?data:data.questoes;if(!Array.isArray(list))throw new Error("O JSON precisa conter uma lista questoes.");setPreview(list.map((q:Row,i:number)=>{const problems=[...(Array.isArray(q.problemas)?q.problemas:[])];if(!q.enunciado?.trim())problems.push("Enunciado ausente");if(!q.gabarito)problems.push("Gabarito ausente");const multi=q.modalidade==="multipla_escolha";if(!["multipla_escolha","certo_errado"].includes(q.modalidade))problems.push("Modalidade inválida");if(multi&&(!Array.isArray(q.alternativas)||q.alternativas.length<2))problems.push("Alternativas incompletas");if(multi&&q.gabarito&&!q.alternativas?.some((a:Row)=>a.letra===q.gabarito))problems.push("Gabarito não corresponde a uma alternativa");if(!multi&&q.gabarito&&!["Certo","Errado"].includes(q.gabarito))problems.push("Gabarito deve ser Certo ou Errado");return {...q,_index:i+1,_problems:[...new Set(problems)]};}));setNotice("Prévia gerada. Confira cada questão antes de importar.");}catch(e:any){setPreview([]);setError(e.message||"JSON inválido.");}}
+  async function importBatch(){const invalid=preview.filter(q=>q._problems.length);if(invalid.length)throw new Error("Corrija as questões com erros antes de importar.");if(!batchDiscipline||!batchSubject)throw new Error("Selecione disciplina e assunto do lote.");await run(async()=>{const batch=await api("/rest/v1/import_batches",{token,method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify({admin_id:user.id,discipline_id:batchDiscipline,subject_id:batchSubject,status:"importing",total_count:preview.length})});let imported=0;for(const q of preview){const multi=q.modalidade==="multipla_escolha";const inserted=await api("/rest/v1/questions",{token,method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify({discipline_id:batchDiscipline,subject_id:batchSubject,modality:multi?"multiple_choice":"true_false",statement:q.enunciado,status:"draft",source_id:q.id_origem||null,reference_text:q.referencia||null,created_by:user.id})});const id=inserted[0].id;if(multi&&q.alternativas?.length)await api("/rest/v1/question_options",{token,method:"POST",body:JSON.stringify(q.alternativas.map((a:Row,i:number)=>({question_id:id,option_key:a.letra,option_text:a.texto,position:i}))) });await api("/rest/v1/question_keys",{token,method:"POST",body:JSON.stringify({question_id:id,correct_key:q.gabarito})});if(q.comentarios?.length)await api("/rest/v1/question_comments",{token,method:"POST",body:JSON.stringify(q.comentarios.map((c:Row,i:number)=>({question_id:id,title:c.titulo||null,content:c.conteudo,position:i}))) });imported++;}if(batch?.[0]?.id)await api("/rest/v1/import_batches?id=eq."+batch[0].id,{token,method:"PATCH",body:JSON.stringify({status:"completed",imported_count:imported})});setPreview([]);setJson("");},"Lote importado como rascunho. Revise e publique as questões no banco.");}
+  async function answer(){if(!activeQuestion||!choice)return;const requestId=crypto.randomUUID();const res=await api("/rest/v1/rpc/submit_answer",token,{method:"POST",body:JSON.stringify({p_question_id:activeQuestion.id,p_selected_key:choice,p_request_id:requestId})});setResult(res);await loadData();}
+  const visible=useMemo(()=>questions.filter(q=>(!discipline||q.discipline_id===discipline)&&(!subject||q.subject_id===subject)&&(modality==="all"||q.modality===modality)&&(status==="all"|| (status==="unanswered"?!attempts.some(a=>a.question_id===q.id):status==="answered"?attempts.some(a=>a.question_id===q.id):status==="correct"?attempts.find(a=>a.question_id===q.id)?.is_correct===true:attempts.find(a=>a.question_id===q.id)?.is_correct===false))),[questions,discipline,subject,modality,status,attempts]);
+  const latest=attempts.filter(a=>a.student_id===user?.id); const total=latest.length; const correct=latest.filter(a=>a.is_correct).length;
+  if(!token) return <div className="min-h-screen bg-slate-50 text-slate-900"><header className="border-b bg-white"><div className="mx-auto flex max-w-6xl items-center gap-3 px-5 py-5"><span className="rounded-xl bg-indigo-600 p-2 text-white"><BookOpen size={24}/></span><div><b className="text-lg">Concurso Central</b><p className="text-sm text-slate-500">Sua plataforma de questões</p></div></div></header><main className="mx-auto grid max-w-6xl gap-12 px-5 py-12 md:grid-cols-2 md:items-center"><div><span className="rounded-full bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-700">Estude com propósito</span><h1 className="mt-5 text-4xl font-bold tracking-tight md:text-5xl">Resolva questões. Entenda seus erros. Evolua.</h1><p className="mt-5 max-w-xl text-lg leading-8 text-slate-600">Questões autorais, comentários explicativos e acompanhamento do seu desempenho em um só lugar.</p><div className="mt-8 grid gap-3 text-sm text-slate-600"><p className="flex gap-2"><ShieldCheck className="text-indigo-600"/> Correção e gabarito protegidos</p><p className="flex gap-2"><BarChart3 className="text-indigo-600"/> Histórico individual de respostas</p><p className="flex gap-2"><Upload className="text-indigo-600"/> Importação de questões em lote para administradores</p></div></div><form onSubmit={auth} className="rounded-2xl border bg-white p-7 shadow-sm"><h2 className="text-2xl font-bold">{register?"Criar conta de aluno":"Entrar na plataforma"}</h2><p className="mt-2 text-sm text-slate-500">{register?"Crie sua conta para acompanhar seu progresso.":"Acesse suas questões e estatísticas."}</p>{register&&<label className="mt-5 block text-sm font-medium">Nome completo<input required value={name} onChange={e=>setName(e.target.value)} className="mt-1 w-full rounded-lg border p-3"/></label>}<label className="mt-5 block text-sm font-medium">E-mail<input required type="email" value={email} onChange={e=>setEmail(e.target.value)} className="mt-1 w-full rounded-lg border p-3"/></label><label className="mt-4 block text-sm font-medium">Senha<input required minLength={6} type="password" value={password} onChange={e=>setPassword(e.target.value)} className="mt-1 w-full rounded-lg border p-3"/></label>{error&&<p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}{notice&&<p className="mt-4 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700">{notice}</p>}<button disabled={busy} className="mt-6 w-full rounded-lg bg-indigo-600 p-3 font-semibold text-white disabled:opacity-60">{busy?"Aguarde…":register?"Criar conta":"Entrar"}</button><button type="button" onClick={()=>{setRegister(!register);setError("");setNotice("");}} className="mt-4 w-full text-sm font-medium text-indigo-700">{register?"Já tenho conta — entrar":"Ainda não tenho conta — cadastrar"}</button><p className="mt-5 text-xs text-slate-400">O ambiente precisa ter Supabase configurado para autenticação e persistência.</p></form></main></div>;
+  return <div className="min-h-screen bg-slate-50 text-slate-900"><aside className="fixed hidden h-screen w-64 flex-col border-r bg-white p-5 md:flex"><div className="flex items-center gap-3"><span className="rounded-lg bg-indigo-600 p-2 text-white"><BookOpen/></span><div><b>Concurso Central</b><p className="text-xs text-slate-500">{isAdmin?"Administrador":"Área do aluno"}</p></div></div><nav className="mt-8 grid gap-2">{(isAdmin?[["overview","Visão geral",BarChart3],["questions","Banco de questões",BookOpen],["disciplines","Disciplinas e assuntos",Settings],["import","Importação em lote",Upload],["students","Alunos e acessos",Users],["prompt","Prompt para ChatGPT",Copy]]:[["questions","Minhas questões",BookOpen],["stats","Meu desempenho",BarChart3]]).map(([key,label,Icon]:any)=><button key={key} onClick={()=>setTab(key)} className={"flex items-center gap-3 rounded-lg px-3 py-3 text-left text-sm "+(tab===key?"bg-indigo-50 font-semibold text-indigo-700":"text-slate-600 hover:bg-slate-50")}><Icon size={18}/>{label}</button>)}</nav><button onClick={()=>{setToken("");setUser(null);setProfile(null);}} className="mt-auto flex items-center gap-3 rounded-lg p-3 text-sm text-slate-500 hover:bg-slate-100"><LogOut size={18}/> Sair</button></aside><main className="md:ml-64"><header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b bg-white/95 px-5 py-4 backdrop-blur md:px-8"><div><h1 className="text-xl font-bold">{isAdmin?"Painel administrativo":"Minhas Questões"}</h1><p className="text-sm text-slate-500">{profile?.full_name||user?.email||"Conta"}</p></div><div className="flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-sm"><span className={"size-2 rounded-full "+(isAdmin?"bg-amber-500":"bg-emerald-500")}/>{isAdmin?"Administrador":"Aluno"}</div><nav className="flex w-full gap-2 overflow-x-auto md:hidden">{(isAdmin?[["questions","Questões"],["disciplines","Disciplinas"],["import","Importar"],["prompt","Prompt"]]:[["questions","Questões"],["stats","Desempenho"]]).map(([k,l])=><button key={k} onClick={()=>setTab(k)} className="whitespace-nowrap rounded-lg bg-slate-100 px-3 py-2 text-xs">{l}</button>)}</nav></header><section className="mx-auto max-w-7xl space-y-6 p-5 md:p-8">{error&&<div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}</div>}{notice&&<div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">{notice}</div>}
+  {(tab==="overview"||tab==="stats")&&<><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{[[isAdmin?"Questões publicadas":"Questões disponíveis",questions.length],[isAdmin?"Alunos cadastrados":"Tentativas registradas",attempts.length],["Acertos",correct],["Aproveitamento",total?Math.round(correct/total*100)+"%":"—"]].map(([l,v])=><div key={String(l)} className="rounded-xl border bg-white p-5"><p className="text-sm text-slate-500">{l}</p><p className="mt-2 text-3xl font-bold">{v}</p></div>)}</div><div className="rounded-xl border bg-white p-6"><h2 className="font-bold">Atividade recente</h2><p className="mt-2 text-sm text-slate-500">Os indicadores são carregados do banco de dados; os resultados individuais são privados.</p></div></>}
+  {(tab==="questions"||tab==="overview")&&<><div className="rounded-xl border bg-white p-5"><div className="mb-4 flex items-center gap-2"><Search size={18}/><h2 className="font-bold">Filtrar questões</h2></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"><select value={discipline} onChange={e=>{setDiscipline(e.target.value);setSubject("");}} className="rounded-lg border p-3"><option value="">Todas as disciplinas</option>{disciplines.map(d=><option key={d.id} value={d.id}>{d.name}</option>)}</select><select value={subject} onChange={e=>setSubject(e.target.value)} className="rounded-lg border p-3"><option value="">Todos os assuntos</option>{subjects.filter(s=>!discipline||s.discipline_id===discipline).map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select><select value={modality} onChange={e=>setModality(e.target.value)} className="rounded-lg border p-3"><option value="all">Todas as modalidades</option><option value="multiple_choice">Múltipla escolha</option><option value="true_false">Certo ou errado</option></select><select value={status} onChange={e=>setStatus(e.target.value)} className="rounded-lg border p-3"><option value="all">Todas</option><option value="unanswered">Não resolvidas</option><option value="answered">Resolvidas</option><option value="correct">Acertei</option><option value="wrong">Errei</option></select></div></div><div className="space-y-3">{visible.map((q,i)=><button key={q.id} onClick={()=>{setActiveQuestion(q);setChoice("");setResult(null);setTab("solve");}} className="block w-full rounded-xl border bg-white p-5 text-left hover:border-indigo-300 hover:shadow-sm"><div className="flex items-center justify-between gap-3"><span className="text-xs font-semibold uppercase tracking-wide text-indigo-700">Questão {i+1} · {q.modality==="true_false"?"Certo ou errado":"Múltipla escolha"}</span><span className="text-xs text-slate-400">{attempts.some(a=>a.question_id===q.id)?"Respondida":"Não resolvida"}</span></div><p className="mt-3 line-clamp-3 leading-7">{q.statement}</p></button>)}{visible.length===0&&<div className="rounded-xl border border-dashed bg-white p-12 text-center"><CircleHelp className="mx-auto text-slate-400"/><p className="mt-3 font-semibold">Nenhuma questão encontrada</p><p className="mt-1 text-sm text-slate-500">Tente ajustar os filtros ou aguarde a publicação de questões.</p></div>}</div></>}
+  {tab==="solve"&&activeQuestion&&<div className="rounded-2xl border bg-white p-6 md:p-9"><button onClick={()=>setTab("questions")} className="mb-5 text-sm text-indigo-700">← Voltar às questões</button><span className="text-xs font-bold uppercase tracking-wider text-indigo-700">{activeQuestion.modality==="true_false"?"Certo ou errado":"Múltipla escolha"}</span><h2 className="mt-4 whitespace-pre-wrap text-lg font-semibold leading-8">{activeQuestion.statement}</h2><div className="mt-6 grid gap-3">{(activeQuestion.modality==="true_false"?[{option_key:"Certo",option_text:"Certo"},{option_key:"Errado",option_text:"Errado"}]:(activeQuestion.question_options||[]).sort((a,b)=>a.position-b.position)).map(o=><button disabled={!!result} key={o.option_key} onClick={()=>setChoice(o.option_key)} className={"flex items-start gap-3 rounded-xl border p-4 text-left "+(choice===o.option_key?"border-indigo-500 bg-indigo-50":"hover:bg-slate-50")}><span className="flex size-7 shrink-0 items-center justify-center rounded-full border text-sm font-semibold">{o.option_key}</span><span>{o.option_text}</span></button>)}</div>{!result?<button disabled={!choice||busy} onClick={()=>run(answer,"Resposta registrada.")} className="mt-6 rounded-lg bg-indigo-600 px-6 py-3 font-semibold text-white disabled:opacity-50">Responder</button>:<div className={"mt-6 rounded-xl p-5 "+(result.is_correct?"bg-emerald-50 text-emerald-900":"bg-rose-50 text-rose-900")}><h3 className="font-bold">{result.is_correct?"Parabéns! Você acertou!":"Você errou. Confira o gabarito e o comentário."}</h3><p className="mt-2 text-sm">Gabarito: {result.correct_key}</p>{result.comments?.length?result.comments.map((c:Row,i:number)=><div key={i} className="mt-4 border-t border-current/10 pt-3"><b>{c.title}</b><p className="mt-1 whitespace-pre-wrap">{c.content}</p></div>):<p className="mt-3 text-sm">Esta questão ainda não possui comentário explicativo.</p>}<button onClick={()=>{setActiveQuestion(null);setTab("questions");}} className="mt-4 rounded-lg border border-current/20 px-4 py-2 text-sm">Próxima questão</button></div>}</div>}
+  {tab==="disciplines"&&isAdmin&&<div className="grid gap-5 lg:grid-cols-2"><div className="rounded-xl border bg-white p-5"><h2 className="font-bold">Disciplinas</h2><div className="mt-4 flex gap-2"><input value={newDiscipline} onChange={e=>setNewDiscipline(e.target.value)} placeholder="Nome da disciplina" className="min-w-0 flex-1 rounded-lg border p-3"/><button onClick={()=>run(addDiscipline,"Disciplina cadastrada.")} className="rounded-lg bg-indigo-600 px-4 text-white"><Plus/></button></div><div className="mt-4 divide-y">{disciplines.map(d=><p key={d.id} className="py-3 text-sm">{d.name}</p>)}</div></div><div className="rounded-xl border bg-white p-5"><h2 className="font-bold">Assuntos</h2><select value={subjectDiscipline} onChange={e=>setSubjectDiscipline(e.target.value)} className="mt-4 w-full rounded-lg border p-3"><option value="">Selecione a disciplina</option>{disciplines.map(d=><option key={d.id} value={d.id}>{d.name}</option>)}</select><div className="mt-3 flex gap-2"><input value={newSubject} onChange={e=>setNewSubject(e.target.value)} placeholder="Nome do assunto" className="min-w-0 flex-1 rounded-lg border p-3"/><button onClick={()=>run(addSubject,"Assunto cadastrado.")} className="rounded-lg bg-indigo-600 px-4 text-white"><Plus/></button></div><div className="mt-4 divide-y">{subjects.map(s=><p key={s.id} className="py-3 text-sm">{s.name} <span className="text-slate-400">· {disciplines.find(d=>d.id===s.discipline_id)?.name}</span></p>)}</div></div></div>}
+  {tab==="import"&&isAdmin&&<div className="space-y-5"><div className="rounded-xl border bg-white p-5"><h2 className="text-lg font-bold">Importação em lote</h2><p className="mt-1 text-sm text-slate-500">Cole o JSON formatado pelo ChatGPT, valide a estrutura e revise a prévia antes de importar.</p><div className="mt-4 grid gap-3 sm:grid-cols-2"><select value={batchDiscipline} onChange={e=>{setBatchDiscipline(e.target.value);setBatchSubject("");}} className="rounded-lg border p-3"><option value="">Selecione a disciplina</option>{disciplines.map(d=><option key={d.id} value={d.id}>{d.name}</option>)}</select><select value={batchSubject} onChange={e=>setBatchSubject(e.target.value)} className="rounded-lg border p-3"><option value="">Selecione o assunto</option>{subjects.filter(s=>s.discipline_id===batchDiscipline).map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></div><textarea value={json} onChange={e=>setJson(e.target.value)} rows={12} placeholder="Cole aqui o JSON com as questões…" className="mt-4 w-full rounded-lg border p-4 font-mono text-sm"/><div className="mt-3 flex flex-wrap gap-3"><button onClick={validateBatch} className="rounded-lg border px-4 py-2 font-semibold">Validar e visualizar</button><button disabled={!preview.length||busy} onClick={()=>run(importBatch,"Importação concluída.")} className="rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white disabled:opacity-50">Importar válidas como rascunho ({preview.length})</button></div></div>{preview.length>0&&<div className="rounded-xl border bg-white p-5"><h3 className="font-bold">Prévia · {preview.length} questões</h3><div className="mt-4 space-y-3">{preview.map(q=><div key={q._index} className="rounded-lg border p-4"><div className="flex justify-between gap-3"><b>Questão {q._index}</b><span className={"text-xs "+(q._problems.length?"text-red-600":"text-emerald-700")}>{q._problems.length?q._problems.join(" · "):"Estrutura válida"}</span></div><p className="mt-2 text-sm">{q.enunciado||"Sem enunciado"}</p><p className="mt-2 text-xs text-slate-500">Gabarito: {q.gabarito||"Ausente"} · Comentários: {q.comentarios?.length||0}</p></div>)}</div></div>}</div>}
+  {tab==="prompt"&&isAdmin&&<div className="rounded-xl border bg-white p-5"><h2 className="text-lg font-bold">Prompt padrão para o ChatGPT</h2><p className="mt-1 text-sm text-slate-500">Edite o texto e copie para formatar questões manualmente no ChatGPT.</p><textarea rows={18} value={promptText} onChange={e=>setPromptText(e.target.value)} className="mt-4 w-full rounded-lg border p-4 font-mono text-sm"/><button onClick={()=>{navigator.clipboard.writeText(promptText).then(()=>setNotice("Prompt copiado."),()=>setError("Não foi possível copiar automaticamente."));}} className="mt-3 flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 font-semibold text-white"><Copy size={18}/> Copiar prompt para o ChatGPT</button><p className="mt-3 text-xs text-amber-700">A edição fica nesta sessão; para persistir entre dispositivos, a configuração precisa ser gravada na tabela admin_settings.</p></div>}
+  {tab==="students"&&isAdmin&&<div className="rounded-xl border bg-white p-6"><h2 className="font-bold">Alunos e acessos</h2><p className="mt-2 text-sm text-slate-500">A administração de contas deve ser concluída com uma função privilegiada no servidor; não é seguro permitir alteração de papéis diretamente pelo navegador.</p><p className="mt-4">Respostas registradas: {attempts.length}</p></div>}
+  </section></main></div>;
 }
