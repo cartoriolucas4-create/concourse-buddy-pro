@@ -61,7 +61,7 @@ function QuestionPlatform() {
     try {
       if(!endpoint || !anon) throw new Error("O banco do projeto ainda não forneceu as variáveis de conexão ao frontend.");
       const identifier=email.trim().normalize("NFKC").toLowerCase();
-      if(!identifier || /\\s/.test(identifier)) throw new Error("Informe um identificador sem espaços.");
+      if(!identifier || /\s/.test(identifier)) throw new Error("Informe um identificador sem espaços.");
       if(!password) throw new Error("Informe uma senha.");
       const response=await fetch(endpoint+"/functions/v1/student-auth",{
         method:"POST",
