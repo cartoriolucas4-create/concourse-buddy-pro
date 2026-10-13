@@ -31,7 +31,7 @@ jobs:
       - name: Build static site
         run: bun run build
         env:
-          NITRO_PRESET: github_pages
+          NITRO_PRESET: static
       - name: Prepare GitHub Pages files
         run: |
           if [ -d ".output/public" ]; then
