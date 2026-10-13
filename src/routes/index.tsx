@@ -13,11 +13,21 @@ let sessionToken = "";
 async function api(path:string, tokenOrOptions:string | (RequestInit & {token?:string}), suppliedOptions:RequestInit={}) {
   if (!endpoint || !anon) throw new Error("Conexão com o Supabase ausente: configure VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY nas variáveis do projeto.");
   const options = typeof tokenOrOptions === "string" ? suppliedOptions : tokenOrOptions;
-  const token = typeof tokenOrOptions === "string" ? tokenOrOptions : (tokenOrOptions.token || sessionToken);
-  const response = await fetch(endpoint + path, { ...options, headers: { apikey:anon, Authorization:"Bearer "+token, "Content-Type":"application/json", ...(options.headers||{}) } });
-  const body = await response.text();
-  if (!response.ok) throw new Error(body || "Falha ao consultar o banco.");
-  return body ? JSON.parse(body) : null;
+  let token = typeof tokenOrOptions === "string" ? tokenOrOptions : (tokenOrOptions.token || sessionToken);
+  const send=()=>fetch(endpoint+path,{...options,headers:{apikey:anon,Authorization:"Bearer "+token,"Content-Type":"application/json",...(options.headers||{})}});
+  let response=await send();
+  if(response.status===401){
+    const refresh=window.localStorage.getItem("concurso_central_refresh_token");
+    if(refresh){
+      const rr=await fetch(endpoint+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{apikey:anon,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:refresh})});
+      const rd=await rr.json().catch(()=>null);
+      if(rr.ok&&rd?.access_token&&rd?.refresh_token){token=rd.access_token;sessionToken=token;window.localStorage.setItem("concurso_central_access_token",rd.access_token);window.localStorage.setItem("concurso_central_refresh_token",rd.refresh_token);response=await send();}
+      else {window.localStorage.removeItem("concurso_central_access_token");window.localStorage.removeItem("concurso_central_refresh_token");throw new Error("Sua sessão expirou. Entre novamente para continuar.");}
+    }
+  }
+  const body=await response.text();
+  if(!response.ok){let message=body||"Falha ao consultar o banco.";try{const parsed=JSON.parse(body);message=parsed.message||parsed.msg||parsed.error||message;}catch{}throw new Error(message);}
+  return body?JSON.parse(body):null;
 }
 export const Route = createFileRoute("/")({ component: QuestionPlatform });
 function QuestionPlatform() {
@@ -81,9 +91,9 @@ function QuestionPlatform() {
         throw new Error(message||"Não foi possível concluir a autenticação. Tente novamente.");
       }
       if(register) {
-        if(data.access_token&&data.user) {setUser(data.user);sessionToken=data.access_token;setToken(data.access_token);setNotice("Conta criada e acesso iniciado.");}
+        if(data.access_token&&data.user) {setUser(data.user);sessionToken=data.access_token;if(data.refresh_token)window.localStorage.setItem("concurso_central_refresh_token",data.refresh_token);setToken(data.access_token);setNotice("Conta criada e acesso iniciado.");}
         else {setNotice("Conta criada e acesso iniciado.");}
-      } else if(data.access_token&&data.user) {setUser(data.user);sessionToken=data.access_token;setToken(data.access_token);setNotice("Login realizado.");}
+      } else if(data.access_token&&data.user) {setUser(data.user);sessionToken=data.access_token;if(data.refresh_token)window.localStorage.setItem("concurso_central_refresh_token",data.refresh_token);setToken(data.access_token);setNotice("Login realizado.");}
       else throw new Error("O servidor não retornou uma sessão válida. Tente entrar novamente.");
     } catch(e:any){setError(e.message||"Erro de autenticação.");} finally{setBusy(false);}
   }
