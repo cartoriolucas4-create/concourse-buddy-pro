@@ -43,11 +43,22 @@ function QuestionPlatform() {
     e.preventDefault(); setBusy(true); setError(""); setNotice("");
     try {
       if(!endpoint || !anon) throw new Error("O banco do projeto ainda não forneceu as variáveis de conexão ao frontend.");
-      const post=async(path:string,payload:Row)=>{const response=await fetch(endpoint+path,{method:"POST",headers:{"apikey":anon,"Content-Type":"application/json"},body:JSON.stringify(payload)});const data=await response.json();return {response,data};};
-      const {response,data}=await post(register?"/auth/v1/signup":"/auth/v1/token?grant_type=password",register?{email,password,data:{full_name:name}}:{email,password});
-      if(!response.ok) throw new Error(data.msg||data.message||data.error_description||"Não foi possível autenticar.");
-      if(!data.access_token){setNotice("Cadastro recebido. Confirme o e-mail para ativar a conta administrativa.");setRegister(false);}
-      else {setUser(data.user);sessionToken=data.access_token;setToken(data.access_token);setNotice("Login realizado.");}
+      const post=async(path:string,payload:Row)=>{const response=await fetch(endpoint+path,{method:"POST",headers:{"apikey":anon,"Authorization":"Bearer "+anon,"Content-Type":"application/json"},body:JSON.stringify(payload)});const raw=await response.text();let data:Row={};try{data=raw?JSON.parse(raw):{};}catch{data={message:raw};}return {response,data};};
+      const {response,data}=await post(register?"/auth/v1/signup":"/auth/v1/token?grant_type=password",register?{email:email.trim(),password,data:{full_name:name.trim()}}:{email:email.trim(),password});
+      if(!response.ok) {
+        const code=String(data.code||data.error_code||"");
+        const message=String(data.msg||data.message||data.error_description||"");
+        if(code==="signup_disabled"||/email signups are disabled/i.test(message)) throw new Error("O cadastro por e-mail está desativado nas configurações de autenticação do Supabase. É necessário habilitar novos cadastros no projeto conectado; o site não consegue ativar essa opção sozinho.");
+        if(code==="user_already_exists"||/already registered|user already exists/i.test(message)) throw new Error("Este e-mail já possui cadastro. Volte para Entrar ou use a recuperação de senha.");
+        if(/invalid login credentials/i.test(message)) throw new Error("E-mail ou senha incorretos. Confira os dados e tente novamente.");
+        if(/email not confirmed/i.test(message)) throw new Error("Confirme seu e-mail pelo link enviado antes de entrar.");
+        throw new Error(message||"Não foi possível concluir a autenticação. Tente novamente.");
+      }
+      if(register) {
+        if(data.access_token&&data.user) {setUser(data.user);sessionToken=data.access_token;setToken(data.access_token);setNotice("Conta criada e acesso iniciado.");}
+        else {setNotice("Cadastro recebido. Confira sua caixa de entrada e o spam para confirmar o e-mail antes de entrar.");setRegister(false);}
+      } else if(data.access_token&&data.user) {setUser(data.user);sessionToken=data.access_token;setToken(data.access_token);setNotice("Login realizado.");}
+      else throw new Error("O servidor não retornou uma sessão válida. Tente entrar novamente.");
     } catch(e:any){setError(e.message||"Erro de autenticação.");} finally{setBusy(false);}
   }
   async function run(action:()=>Promise<any>, success:string) {setBusy(true);setError("");setNotice("");try{await action();setNotice(success);await loadData();}catch(e:any){setError(e.message||"Operação não concluída.");}finally{setBusy(false);}}
