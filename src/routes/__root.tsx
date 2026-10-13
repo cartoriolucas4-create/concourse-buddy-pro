@@ -11,7 +11,6 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { StoreProvider } from "../lib/store";
 import { Toaster } from "../components/ui/sonner";
 
 function NotFoundComponent() {
@@ -79,16 +78,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Central de Estudos para Concurseiro" },
+      { title: "Concurso Central — Plataforma de Questões" },
       {
         name: "description",
         content:
-          "Central de organização, planejamento e controle dos estudos para concursos públicos.",
+          "Plataforma de questões para concursos, com correção, comentários e acompanhamento de desempenho.",
       },
-      { property: "og:title", content: "Central de Estudos para Concurseiro" },
+      { property: "og:title", content: "Concurso Central — Plataforma de Questões" },
       {
         property: "og:description",
-        content: "Planeje, registre e acompanhe seus estudos para concursos em um só painel.",
+        content: "Resolva questões, consulte comentários e acompanhe seu desempenho.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -129,11 +128,9 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <StoreProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-        <Toaster />
-      </StoreProvider>
+      {/* Nested routes render here. */}
+      <Outlet />
+      <Toaster />
     </QueryClientProvider>
   );
 }
