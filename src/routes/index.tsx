@@ -6,7 +6,7 @@ type Row = Record<string, any>;
 type Question = { id:string; statement:string; modality:"multiple_choice"|"true_false"; discipline_id:string; subject_id:string; status:string; question_options?:Row[] };
 const url = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
 const anon = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as string | undefined;
-const endpoint = url ? url.replace(/\/$/, "") : "";
+const endpoint = url ? url.replace(/\/$/, "") : "";\nlet sessionToken = "";
 async function api(path:string, token:string, options:RequestInit={}) {
   if (!endpoint || !anon) throw new Error("Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY para conectar o banco.");
   const response = await fetch(endpoint + path, { ...options, headers: { apikey:anon, Authorization:"Bearer "+token, "Content-Type":"application/json", ...(options.headers||{}) } });
@@ -28,14 +28,14 @@ function QuestionPlatform() {
   const isAdmin=profile?.role==="admin" && !profile?.blocked;
   async function loadData(t=token) {
     const [p,d,s,q,a]=await Promise.all([
-      api("/rest/v1/profiles?select=*&limit=1",t),api("/rest/v1/disciplines?select=*&active=eq.true&order=name",t),
+      api("/rest/v1/profiles?select=*&id=eq."+user?.id+"&limit=1",t),api("/rest/v1/disciplines?select=*&active=eq.true&order=name",t),
       api("/rest/v1/subjects?select=*&active=eq.true&order=name",t),
       api("/rest/v1/questions?select=id,statement,modality,discipline_id,subject_id,status,question_options(id,option_key,option_text,position)&status=eq.published&order=created_at",t),
       api("/rest/v1/question_attempts?select=*&order=created_at.desc",t)
     ]);
     setProfile(p?.[0]||null); setDisciplines(d||[]); setSubjects(s||[]); setQuestions(q||[]); setAttempts(a||[]);
   }
-  useEffect(()=>{ if(token){loadData().catch(e=>setError(e.message));} },[token]);
+  useEffect(()=>{ sessionToken=token; if(token){loadData().catch(e=>setError(e.message));} },[token]);
   async function auth(e:React.FormEvent) {
     e.preventDefault(); setBusy(true); setError(""); setNotice("");
     try {
