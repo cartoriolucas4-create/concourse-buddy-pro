@@ -60,30 +60,25 @@ function QuestionPlatform() {
     e.preventDefault(); setBusy(true); setError(""); setNotice("");
     try {
       if(!endpoint || !anon) throw new Error("O banco do projeto ainda não forneceu as variáveis de conexão ao frontend.");
-      const post=async(path:string,payload:Row)=>{const response=await fetch(endpoint+path,{method:"POST",headers:{"apikey":anon,"Authorization":"Bearer "+anon,"Content-Type":"application/json"},body:JSON.stringify(payload)});const raw=await response.text();let data:Row={};try{data=raw?JSON.parse(raw):{};}catch{data={message:raw};}return {response,data};};
       const identifier=email.trim().normalize("NFKC").toLowerCase();
       if(!identifier || /\\s/.test(identifier)) throw new Error("Informe um identificador sem espaços.");
       if(!password) throw new Error("Informe uma senha.");
-      // The login field acts as a student identifier, not a deliverable email address.
-      // Map it deterministically to a synthetic address so students can use nicknames
-      // or non-email identifiers consistently for both signup and login.
-      const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(identifier));
-      const authId=Array.from(new Uint8Array(digest)).map(byte=>byte.toString(16).padStart(2,"0")).join("").slice(0,48);
-      const authEmail="cc-"+authId+"@alunos.concurso-central.app";
-      const {response,data}=await post(register?"/auth/v1/signup":"/auth/v1/token?grant_type=password",register?{email:authEmail,password,data:{full_name:name.trim(),student_identifier:identifier}}:{email:authEmail,password});
+      const response=await fetch(endpoint+"/functions/v1/student-auth",{
+        method:"POST",
+        headers:{"apikey":anon,"Authorization":"Bearer "+anon,"Content-Type":"application/json"},
+        body:JSON.stringify({mode:register?"signup":"login",identifier,password,full_name:name.trim()})
+      });
+      const raw=await response.text();
+      let data:Row={};try{data=raw?JSON.parse(raw):{};}catch{data={message:raw};}
+      const message=String(data.error||data.msg||data.message||data.error_description||"");
       if(!response.ok) {
-        const code=String(data.code||data.error_code||"");
-        const message=String(data.msg||data.message||data.error_description||"");
-        if(code==="signup_disabled"||/email signups are disabled/i.test(message)) throw new Error("O cadastro por e-mail está desativado nas configurações de autenticação do Supabase. É necessário habilitar novos cadastros no projeto conectado; o site não consegue ativar essa opção sozinho.");
-        if(code==="over_email_send_rate_limit"||/email rate limit exceeded|rate limit.*email/i.test(message)) throw new Error("O Supabase limitou temporariamente o envio de e-mails de confirmação. Aguarde antes de tentar novamente. Para usar identificadores de aluno sem e-mail real, o provedor precisa ter a confirmação de e-mail desativada no painel do Supabase.");
-        if(code==="user_already_exists"||/already registered|user already exists/i.test(message)) throw new Error("Este identificador já possui cadastro. Volte para Entrar e use a mesma senha.");
-        if(/invalid login credentials/i.test(message)) throw new Error("E-mail ou senha incorretos. Confira os dados e tente novamente.");
-        if(/email not confirmed/i.test(message)) throw new Error("Confirme seu e-mail pelo link enviado antes de entrar.");
+        if(response.status===409) throw new Error(message||"Este identificador já possui conta. Entre com a mesma senha.");
+        if(response.status===401) throw new Error("Identificador ou senha incorretos.");
         throw new Error(message||"Não foi possível concluir a autenticação. Tente novamente.");
       }
       if(register) {
         if(data.access_token&&data.user) {setUser(data.user);sessionToken=data.access_token;setToken(data.access_token);setNotice("Conta criada e acesso iniciado.");}
-        else {setNotice("Cadastro recebido. Confira sua caixa de entrada e o spam para confirmar o e-mail antes de entrar.");setRegister(false);}
+        else {setNotice("Conta criada e acesso iniciado.");}
       } else if(data.access_token&&data.user) {setUser(data.user);sessionToken=data.access_token;setToken(data.access_token);setNotice("Login realizado.");}
       else throw new Error("O servidor não retornou uma sessão válida. Tente entrar novamente.");
     } catch(e:any){setError(e.message||"Erro de autenticação.");} finally{setBusy(false);}
