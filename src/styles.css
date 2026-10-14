@@ -194,3 +194,71 @@
 #lovable-badge {
   display: none !important;
 }
+
+
+/* Concurso Central: dark theme polish for legacy utility classes used by the main app. */
+.cc-dark body {
+  background: #0b1220 !important;
+  color: #e5eaf3 !important;
+}
+.cc-dark body [class~="bg-white"],
+.cc-dark body [class*="bg-white/"] {
+  background-color: #151f30 !important;
+}
+.cc-dark body [class~="bg-slate-50"],
+.cc-dark body [class~="bg-gray-50"] {
+  background-color: #101827 !important;
+}
+.cc-dark body [class~="bg-slate-100"],
+.cc-dark body [class~="bg-gray-100"] {
+  background-color: #1c293c !important;
+}
+.cc-dark body [class~="text-slate-900"],
+.cc-dark body [class~="text-gray-900"],
+.cc-dark body [class~="text-slate-800"],
+.cc-dark body [class~="text-gray-800"] {
+  color: #edf2fb !important;
+}
+.cc-dark body [class~="text-slate-700"],
+.cc-dark body [class~="text-gray-700"] {
+  color: #d4deed !important;
+}
+.cc-dark body [class~="text-slate-600"],
+.cc-dark body [class~="text-gray-600"],
+.cc-dark body [class~="text-slate-500"],
+.cc-dark body [class~="text-gray-500"] {
+  color: #a9b8cc !important;
+}
+.cc-dark body [class~="border"],
+.cc-dark body [class*="border-slate-"],
+.cc-dark body [class*="border-gray-"] {
+  border-color: #344258 !important;
+}
+.cc-dark body input:not([type="checkbox"]):not([type="radio"]),
+.cc-dark body textarea,
+.cc-dark body select {
+  background-color: #111b2b !important;
+  color: #edf2fb !important;
+  border-color: #40516b !important;
+}
+.cc-dark body input::placeholder,
+.cc-dark body textarea::placeholder {
+  color: #8495ad !important;
+}
+.cc-dark body table thead {
+  background-color: #1c293c !important;
+}
+.cc-dark body table tbody tr {
+  border-color: #344258 !important;
+}
+.cc-dark body [class*="bg-indigo-50"] { background-color: #20294a !important; }
+.cc-dark body [class*="text-indigo-700"] { color: #b9c7ff !important; }
+.cc-dark body [class*="bg-emerald-50"] { background-color: #12372f !important; }
+.cc-dark body [class*="text-emerald-700"] { color: #86efc5 !important; }
+.cc-dark body [class*="bg-rose-50"] { background-color: #421f2b !important; }
+.cc-dark body [class*="text-rose-600"],
+.cc-dark body [class*="text-rose-700"] { color: #fda4af !important; }
+.cc-dark body [class*="bg-amber-50"] { background-color: #3c3018 !important; }
+.cc-dark body [class*="text-amber-700"] { color: #fcd88a !important; }
+.cc-dark body button:disabled { opacity: .55; }
+.cc-dark body ::selection { background: #4657a8; color: #fff; }
