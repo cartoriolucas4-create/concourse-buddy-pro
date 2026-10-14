@@ -62,7 +62,7 @@ export function QuestionPlatform() {
   function sanitizeCommentHtml(html:string){
     const doc=new DOMParser().parseFromString(html,"text/html");const allowed=new Set(["B","STRONG","I","EM","U","P","BR","UL","OL","LI","SPAN"]);
     const clean=(node:Node)=>{for(const child of Array.from(node.childNodes)){if(child.nodeType===1){const el=child as HTMLElement;if(!allowed.has(el.tagName)){child.replaceWith(document.createTextNode(el.textContent||""));continue;}Array.from(el.attributes).forEach(a=>el.removeAttribute(a.name));clean(el);}else if(child.nodeType!==3)child.remove();}};
-    const body=doc.body;if(!body)return document.createElement("div").textContent=html, html;clean(body);return body.innerHTML;
+    const body=doc.body;if(!body)return "";clean(body);return body.innerHTML;
   }
   function commentCommand(command:string,value?:string){document.execCommand(command,false,value);}
   async function updateStudentComment(comment:Row){
