@@ -60,7 +60,7 @@ export function QuestionPlatform() {
       api("/rest/v1/question_review_marks?select=*&order=created_at.desc",t),
       admin?api("/rest/v1/import_batches?select=*&order=created_at.desc",t):Promise.resolve([])
     ]);
-    setProfile(currentProfile);setDisplayName(window.localStorage.getItem("cc_display_name_"+(user?.id||""))||currentProfile?.full_name||"");setDisciplines(d||[]);setSubjects(subjectsData||[]);setQuestions(q||[]);setAttempts(attemptData||[]);setReviewMarks(reviewData||[]);setImportBatches(batchesData||[]);
+    setProfile(currentProfile);setDisplayName(window.localStorage.getItem("cc_display_name_"+(user?.id||""))||currentProfile?.full_name||"");setDisciplines(d||[]);setSubjects(subjectsData||[]);setQuestions(q||[]);setAttempts(attemptData||[]);setReviewMarks(reviewData||[]);setImportBatches(batchesData||[]);setError("");
   }
   useEffect(()=>{ 
     const saved=window.localStorage.getItem("concurso_central_access_token");
@@ -101,7 +101,7 @@ export function QuestionPlatform() {
       if(register) {
         if(data.access_token&&data.user) {setUser(data.user);sessionToken=data.access_token;if(data.refresh_token)window.localStorage.setItem("concurso_central_refresh_token",data.refresh_token);setToken(data.access_token);setNotice("Conta criada e acesso iniciado.");}
         else {setNotice("Conta criada e acesso iniciado.");}
-      } else if(data.access_token&&data.user) {setUser(data.user);sessionToken=data.access_token;if(data.refresh_token)window.localStorage.setItem("concurso_central_refresh_token",data.refresh_token);setToken(data.access_token);setNotice("Login realizado.");}
+      } else if(data.access_token&&data.user) {setError("");setUser(data.user);sessionToken=data.access_token;if(data.refresh_token)window.localStorage.setItem("concurso_central_refresh_token",data.refresh_token);setToken(data.access_token);setNotice("Login realizado.");}
       else throw new Error("O servidor não retornou uma sessão válida. Tente entrar novamente.");
     } catch(e:any){setError(e.message||"Erro de autenticação.");} finally{setBusy(false);}
   }
