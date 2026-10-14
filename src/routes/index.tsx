@@ -179,23 +179,13 @@ html.cc-dark .border,html.cc-dark .border-b,html.cc-dark .border-t{border-color:
 html.cc-dark input,html.cc-dark select,html.cc-dark textarea{background-color:#0f172a!important;color:#e2e8f0!important;border-color:#475569!important}
 html.cc-dark .hover\\:bg-slate-50:hover{background-color:#334155!important}
 html.cc-dark .bg-indigo-50{background-color:#312e81!important;color:#e0e7ff!important}
-/* Resultados: contraste acessível no tema escuro sem alterar o tema claro. */
-html.cc-dark .bg-emerald-50{background-color:#123b2b!important;color:#ecfdf5!important;border-color:#26734d!important}
-html.cc-dark .text-emerald-900,html.cc-dark .text-emerald-800,html.cc-dark .text-emerald-700{color:#d1fae5!important}
-html.cc-dark .text-emerald-600{color:#6ee7b7!important}
-html.cc-dark .border-emerald-300,html.cc-dark .border-emerald-200{border-color:#34d399!important}
-html.cc-dark .bg-emerald-500{background-color:#10b981!important}
-html.cc-dark .bg-emerald-700{background-color:#047857!important;color:#ffffff!important}
-html.cc-dark .hover\\:bg-emerald-800:hover{background-color:#065f46!important}
-html.cc-dark .bg-rose-50{background-color:#451f2a!important;color:#fff1f2!important;border-color:#9f334b!important}
-html.cc-dark .text-rose-900,html.cc-dark .text-rose-800,html.cc-dark .text-rose-700,html.cc-dark .text-rose-600{color:#fecdd3!important}
-html.cc-dark .border-rose-300,html.cc-dark .border-rose-200{border-color:#fb7185!important}
-html.cc-dark .bg-rose-500{background-color:#f43f5e!important}
-html.cc-dark .bg-red-50{background-color:#451f2a!important;color:#fff1f2!important;border-color:#9f334b!important}
-html.cc-dark .text-red-800,html.cc-dark .text-red-700,html.cc-dark .text-red-600{color:#fecdd3!important}
-html.cc-dark .bg-amber-50{background-color:#3f3217!important;color:#fef3c7!important}
-html.cc-dark .text-amber-700,html.cc-dark .text-amber-800{color:#fde68a!important}
-html.cc-dark .bg-emerald-50 *,html.cc-dark .bg-rose-50 *,html.cc-dark .bg-red-50 *{color:inherit}
+/* Painéis de resposta: fundo claro e texto escuro no tema noturno para contraste forte. */
+html.cc-dark .bg-emerald-50{background-color:#ecfdf5!important;color:#064e3b!important;border-color:#34d399!important}
+html.cc-dark .bg-emerald-50 .text-emerald-900,html.cc-dark .bg-emerald-50 .text-emerald-800,html.cc-dark .bg-emerald-50 .text-emerald-700{color:#065f46!important}
+html.cc-dark .bg-rose-50{background-color:#fff1f2!important;color:#881337!important;border-color:#fb7185!important}
+html.cc-dark .bg-rose-50 .text-rose-900,html.cc-dark .bg-rose-50 .text-rose-800,html.cc-dark .bg-rose-50 .text-rose-700,html.cc-dark .bg-rose-50 .text-rose-600{color:#9f1239!important}
+html.cc-dark .bg-red-50{background-color:#fff1f2!important;color:#881337!important;border-color:#fb7185!important}
+html.cc-dark .bg-red-50 .text-red-800,html.cc-dark .bg-red-50 .text-red-700,html.cc-dark .bg-red-50 .text-red-600{color:#9f1239!important}
 `}</style>{error&&<div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}</div>}{notice&&<div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">{notice}</div>}
   {tab==="overview"&&<><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{[["Questões publicadas",questions.length],["Tentativas registradas",attempts.length],["Acertos gerais",correct],["Aproveitamento geral",total?Math.round(correct/total*100)+"%":"—"]].map(([l,v])=><div key={String(l)} className="rounded-xl border bg-white p-5"><p className="text-sm text-slate-500">{l}</p><p className="mt-2 text-3xl font-bold">{v}</p></div>)}</div><div className="rounded-xl border bg-white p-6"><h2 className="font-bold">Resumo do sistema</h2><p className="mt-2 text-sm text-slate-500">Visão geral administrativa. As estatísticas individuais ficam na aba Meu desempenho do aluno.</p></div></>}
   {tab==="stats"&&<div className="space-y-6">
