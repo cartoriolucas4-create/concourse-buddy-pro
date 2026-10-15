@@ -123,6 +123,18 @@ export function QuestionPlatform() {
     try{await api("/rest/v1/question_reports?id=eq."+report.id,token,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status,updated_at:new Date().toISOString()})});setQuestionReports(prev=>prev.map(r=>r.id===report.id?{...r,status,updated_at:new Date().toISOString()}:r));setNotice("Status do relato atualizado.");}
     catch(e:any){setError("Não foi possível atualizar o relato: "+(e?.message||"erro"));}
   }
+  async function fetchAllRows(path:string,t=token):Promise<Row[]>{
+    const pageSize=1000;let offset=0;let all:Row[]=[];
+    while(true){
+      const separator=path.includes("?")?"&":"?";
+      const page=await api(path+separator+"limit="+pageSize+"&offset="+offset,t);
+      const rows=Array.isArray(page)?page:[];
+      all=all.concat(rows);
+      if(rows.length<pageSize)break;
+      offset+=rows.length;
+    }
+    return all;
+  }
   async function loadData(t=token) {
     const p=await api("/rest/v1/profiles?select=*&id=eq."+user?.id+"&limit=1",t);
     const currentProfile=p?.[0]||null;
@@ -130,7 +142,7 @@ export function QuestionPlatform() {
     const [d,subjectsData,q,attemptData,reviewData,batchesData,promptSetting,commentData,commentLikeData,reportData]=await Promise.all([
       api("/rest/v1/disciplines?select=*&active=eq.true&order=name",t),
       api("/rest/v1/subjects?select=*&active=eq.true&order=name",t),
-      api("/rest/v1/questions?select="+(admin?"id,statement,modality,discipline_id,subject_id,status,source_id,reference_text,created_at,question_options(id,option_key,option_text,position),question_keys(correct_key),question_comments(id,title,content,position)":"id,statement,modality,discipline_id,subject_id,status,created_at,question_options(id,option_key,option_text,position)")+"&"+(admin?"status=neq.archived":"status=eq.published")+"&order=created_at.desc",t),
+      fetchAllRows("/rest/v1/questions?select="+(admin?"id,statement,modality,discipline_id,subject_id,status,source_id,reference_text,created_at,question_options(id,option_key,option_text,position),question_keys(correct_key),question_comments(id,title,content,position)":"id,statement,modality,discipline_id,subject_id,status,created_at,question_options(id,option_key,option_text,position)")+"&"+(admin?"status=neq.archived":"status=eq.published")+"&order=created_at.desc",t),
       api("/rest/v1/question_attempts?select=*&order=created_at.desc",t),
       api("/rest/v1/question_review_marks?select=*&order=created_at.desc",t),
       admin?api("/rest/v1/import_batches?select=*&order=created_at.desc",t):Promise.resolve([]),
