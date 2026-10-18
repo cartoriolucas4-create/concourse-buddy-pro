@@ -66,16 +66,18 @@ export function QuestionPlatform() {
     finally{setReportBusy(false);}
   }
   function sanitizeCommentHtml(html:string){
-    if(!html||typeof html!=="string")return "";
+    if(typeof html!=="string"||!html)return "";
+    const fallback=()=>html.replace(/<[^>]*>/g,"");
     try{
-      const doc=new DOMParser().parseFromString(html,"text/html");
+      const parser=typeof DOMParser!=="undefined"?new DOMParser():null;
+      const doc=parser?.parseFromString(html,"text/html");
       const body=doc?.body;
-      if(!body)return html.replace(/<[^>]*>/g,"");
+      if(!body||typeof body.innerHTML!=="string")return fallback();
       const allowed=new Set(["B","STRONG","I","EM","U","P","BR","UL","OL","LI","SPAN"]);
-      const clean=(node:Node)=>{for(const child of Array.from(node.childNodes)){if(child.nodeType===1){const el=child as HTMLElement;if(!allowed.has(el.tagName)){child.replaceWith(document.createTextNode(el.textContent||""));continue;}const safeColor=el.tagName==="SPAN"?(el.style.color||""):"";Array.from(el.attributes).forEach(a=>el.removeAttribute(a.name));if(safeColor)el.setAttribute("style","color:"+safeColor);clean(el);}else if(child.nodeType!==3)child.remove();}};
+      const clean=(node:Node)=>{for(const child of Array.from(node.childNodes||[])){if(child.nodeType===1){const el=child as HTMLElement;if(!allowed.has(el.tagName)){child.replaceWith(doc!.createTextNode(el.textContent||""));continue;}const safeColor=el.tagName==="SPAN"?(el.style?.color||""):"";Array.from(el.attributes||[]).forEach(a=>el.removeAttribute(a.name));if(safeColor)el.setAttribute("style","color:"+safeColor);clean(el);}else if(child.nodeType!==3)child.remove();}};
       clean(body);
-      return typeof body.innerHTML==="string"?body.innerHTML:"";
-    }catch{return html.replace(/<[^>]*>/g,"");}
+      return body.innerHTML||"";
+    }catch{return fallback();}
   }
   const newCommentEditorRef=useRef<HTMLDivElement|null>(null); const editCommentEditorRef=useRef<HTMLDivElement|null>(null);
   function commentCommand(command:string,value?:string,editing=false){
