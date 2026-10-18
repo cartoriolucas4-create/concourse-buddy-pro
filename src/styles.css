@@ -265,44 +265,76 @@
 
 
 
-/* Identidade cinematográfica policial: imagem realista, contraste controlado e composição sóbria. */
+/* Tela inicial policial: fotografia operacional em equipe, camadas cinematográficas e contraste premium. */
 .login-shell {
+  isolation: isolate;
   background:
-    linear-gradient(90deg, rgba(5, 10, 18, .96) 0%, rgba(5, 10, 18, .78) 43%, rgba(5, 10, 18, .56) 100%),
-    linear-gradient(0deg, rgba(5, 10, 18, .62), rgba(5, 10, 18, .08)),
-    url("https://images.unsplash.com/photo-1611304139630-427f59f865bd?auto=format&fit=crop&w=2400&q=90") center 42% / cover fixed,
+    linear-gradient(90deg, rgba(4, 8, 14, .96) 0%, rgba(4, 8, 14, .86) 35%, rgba(4, 8, 14, .58) 68%, rgba(4, 8, 14, .72) 100%),
+    linear-gradient(0deg, rgba(4, 8, 14, .82) 0%, rgba(4, 8, 14, .08) 58%, rgba(4, 8, 14, .38) 100%),
+    url("https://leb.fbi.gov/image-repository/police-swat-stock-1.jpg/@@images/image") center 42% / cover fixed,
     #080d15 !important;
 }
 .login-shell::before {
-  opacity: .08;
+  z-index: -1;
+  opacity: .12;
+  background-image:
+    linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
   background-size: 56px 56px;
-  mask-image: linear-gradient(to bottom, black, transparent 72%);
+  mask-image: linear-gradient(to bottom, black, transparent 78%);
 }
-.login-glow { opacity: .07; }
+.login-shell::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 8%;
+  right: 3%;
+  width: min(34vw, 31rem);
+  height: 38vh;
+  min-height: 16rem;
+  border: 1px solid rgba(229,190,115,.24);
+  border-radius: 1.25rem;
+  background:
+    linear-gradient(180deg, rgba(5,10,18,.04), rgba(5,10,18,.82)),
+    url("https://files.nc.gov/dps/styles/event_image/public/images/2026-02/Tac%204.jpg?VersionId=y0sOxxj1kBxR.ZOaFmE6FHrH9XqggCgg&itok=AR_17pH8") center / cover;
+  opacity: .42;
+  box-shadow: 0 24px 70px rgba(0,0,0,.35);
+  pointer-events: none;
+  mask-image: linear-gradient(90deg, transparent 0%, black 25%, black 100%);
+}
+.login-glow { opacity: .05; }
 .login-brand-icon {
-  background: linear-gradient(145deg, rgba(18, 29, 44, .94), rgba(8, 13, 21, .96));
-  border-color: rgba(229, 190, 115, .48);
-  box-shadow: 0 12px 36px rgba(0,0,0,.24);
+  background: linear-gradient(145deg, rgba(18, 29, 44, .96), rgba(8, 13, 21, .98));
+  border: 1px solid rgba(229,190,115,.48);
+  box-shadow: 0 12px 36px rgba(0,0,0,.3);
 }
 .login-feature {
-  background: rgba(8, 14, 23, .58);
-  border-color: rgba(255,255,255,.12);
+  background: rgba(8, 14, 23, .62);
+  border: 1px solid rgba(255,255,255,.12);
   backdrop-filter: blur(14px);
 }
 .login-feature:hover {
-  background: rgba(13, 22, 34, .78);
+  background: rgba(13, 22, 34, .8);
   border-color: rgba(229,190,115,.38);
 }
 .login-card {
-  box-shadow: 0 30px 90px -25px rgba(0,0,0,.72), 0 0 0 1px rgba(255,255,255,.12);
+  box-shadow: 0 30px 90px -25px rgba(0,0,0,.76), 0 0 0 1px rgba(255,255,255,.12);
 }
 @media (max-width: 767px) {
   .login-shell {
     background:
-      linear-gradient(180deg, rgba(5,10,18,.78), rgba(5,10,18,.94) 55%, rgba(5,10,18,.98)),
-      url("https://images.unsplash.com/photo-1611304139630-427f59f865bd?auto=format&fit=crop&w=1400&q=85") center top / auto 52rem no-repeat,
+      linear-gradient(180deg, rgba(4,8,14,.7), rgba(4,8,14,.92) 38%, rgba(4,8,14,.98) 78%),
+      url("https://leb.fbi.gov/image-repository/police-swat-stock-1.jpg/@@images/image") center top / auto 46rem no-repeat,
       #080d15 !important;
     background-attachment: scroll !important;
+  }
+  .login-shell::after {
+    top: 4.5rem;
+    right: -1.5rem;
+    width: 54vw;
+    height: 12rem;
+    min-height: 0;
+    opacity: .24;
   }
 }
 
