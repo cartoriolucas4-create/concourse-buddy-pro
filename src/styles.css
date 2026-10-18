@@ -264,6 +264,48 @@
 .cc-dark body ::selection { background: #4657a8; color: #fff; }
 
 
+
+/* Identidade cinematográfica policial: imagem realista, contraste controlado e composição sóbria. */
+.login-shell {
+  background:
+    linear-gradient(90deg, rgba(5, 10, 18, .96) 0%, rgba(5, 10, 18, .78) 43%, rgba(5, 10, 18, .56) 100%),
+    linear-gradient(0deg, rgba(5, 10, 18, .62), rgba(5, 10, 18, .08)),
+    url("https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=2400&q=90") center 42% / cover fixed,
+    #080d15 !important;
+}
+.login-shell::before {
+  opacity: .08;
+  background-size: 56px 56px;
+  mask-image: linear-gradient(to bottom, black, transparent 72%);
+}
+.login-glow { opacity: .07; }
+.login-brand-icon {
+  background: linear-gradient(145deg, rgba(18, 29, 44, .94), rgba(8, 13, 21, .96));
+  border-color: rgba(229, 190, 115, .48);
+  box-shadow: 0 12px 36px rgba(0,0,0,.24);
+}
+.login-feature {
+  background: rgba(8, 14, 23, .58);
+  border-color: rgba(255,255,255,.12);
+  backdrop-filter: blur(14px);
+}
+.login-feature:hover {
+  background: rgba(13, 22, 34, .78);
+  border-color: rgba(229,190,115,.38);
+}
+.login-card {
+  box-shadow: 0 30px 90px -25px rgba(0,0,0,.72), 0 0 0 1px rgba(255,255,255,.12);
+}
+@media (max-width: 767px) {
+  .login-shell {
+    background:
+      linear-gradient(180deg, rgba(5,10,18,.78), rgba(5,10,18,.94) 55%, rgba(5,10,18,.98)),
+      url("https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1400&q=85") center top / auto 52rem no-repeat,
+      #080d15 !important;
+    background-attachment: scroll !important;
+  }
+}
+
 /* Login premium — Lei Seca em Questões */
 .login-shell {
   position: relative;
