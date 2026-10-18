@@ -102,8 +102,8 @@ export function QuestionPlatform() {
   }
   const [activeCommentQuestionId,setActiveCommentQuestionId]=useState(""); 
   function renderCommentContent(raw:string){
-    const parts=raw.split(/(\\*\\*.*?\\*\\*|\\*[^*\\n]+\\*|__.*?__|\\[color=#[0-9a-fA-F]{3,8}\\].*?\\[\\/color\\])/g);
-    return parts.map((part,i)=>{const color=part.match(/^\\[color=(#[0-9a-fA-F]{3,8})\\]([\\s\\S]*)\\[\\/color\\]$/);if(color)return <span key={i} style={{color:color[1]}}>{color[2]}</span>;if(part.startsWith("**")&&part.endsWith("**"))return <strong key={i}>{part.slice(2,-2)}</strong>;if(part.startsWith("__")&&part.endsWith("__"))return <u key={i}>{part.slice(2,-2)}</u>;if(part.startsWith("*")&&part.endsWith("*"))return <em key={i}>{part.slice(1,-1)}</em>;return <span key={i}>{part}</span>;});
+    const parts=raw.split(/(\*\*.*?\*\*|\*[^*\n]+\*|__.*?__|\[color=#[0-9a-fA-F]{3,8}\].*?\[\/color\])/g);
+    return parts.map((part,i)=>{const color=part.match(/^\[color=(#[0-9a-fA-F]{3,8})\]([\s\S]*)\[\/color\]$/);if(color)return <span key={i} style={{color:color[1]}}>{color[2]}</span>;if(part.startsWith("**")&&part.endsWith("**"))return <strong key={i}>{part.slice(2,-2)}</strong>;if(part.startsWith("__")&&part.endsWith("__"))return <u key={i}>{part.slice(2,-2)}</u>;if(part.startsWith("*")&&part.endsWith("*"))return <em key={i}>{part.slice(1,-1)}</em>;return <span key={i}>{part}</span>;});
   }
   async function toggleCommentLike(comment:Row){
     const existing=commentLikes.find(l=>l.comment_id===comment.id&&l.student_id===user?.id);
