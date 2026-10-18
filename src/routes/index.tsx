@@ -67,17 +67,19 @@ export function QuestionPlatform() {
   }
   function sanitizeCommentHtml(html:string){
     if(typeof html!=="string"||!html)return "";
-    const fallback=()=>html.replace(/<[^>]*>/g,"");
-    try{
-      const parser=typeof DOMParser!=="undefined"?new DOMParser():null;
-      const doc=parser?.parseFromString(html,"text/html");
-      const body=doc?.body;
-      if(!body||typeof body.innerHTML!=="string")return fallback();
-      const allowed=new Set(["B","STRONG","I","EM","U","P","BR","UL","OL","LI","SPAN"]);
-      const clean=(node:Node)=>{for(const child of Array.from(node.childNodes||[])){if(child.nodeType===1){const el=child as HTMLElement;if(!allowed.has(el.tagName)){child.replaceWith(doc!.createTextNode(el.textContent||""));continue;}const safeColor=el.tagName==="SPAN"?(el.style?.color||""):"";Array.from(el.attributes||[]).forEach(a=>el.removeAttribute(a.name));if(safeColor)el.setAttribute("style","color:"+safeColor);clean(el);}else if(child.nodeType!==3)child.remove();}};
-      clean(body);
-      return body.innerHTML||"";
-    }catch{return fallback();}
+    // Sanitização sem depender de document.body/innerHTML do DOMParser:
+    // evita falha quando o parser não disponibiliza body durante a renderização.
+    const allowedTags=new Set(["b","strong","i","em","u","p","br","ul","ol","li","span"]);
+    const escapedText=(value:string)=>value.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    return html.replace(/<!--[\s\S]*?-->/g,"").replace(/<\/?([a-zA-Z0-9-]+)([^>]*)>/g,(tag,name,attrs)=>{
+      const key=String(name).toLowerCase();
+      if(!allowedTags.has(key))return "";
+      if(tag.startsWith("</"))return key==="br"?"":`</${key}>`;
+      if(key==="br")return "<br>";
+      if(key!=="span")return `<${key}>`;
+      const color=String(attrs||"").match(/(?:color\s*:\s*)(#[0-9a-fA-F]{3,8}|rgba?\([0-9.,%\s]+\)|[a-zA-Z]+)/i)?.[1];
+      return color?`<span style="color:${color.replace(/["<>]/g,"")}">`:"<span>";
+    }).replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,"");
   }
   const newCommentEditorRef=useRef<HTMLDivElement|null>(null); const editCommentEditorRef=useRef<HTMLDivElement|null>(null);
   function commentCommand(command:string,value?:string,editing=false){
