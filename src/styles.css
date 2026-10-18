@@ -270,7 +270,7 @@
   background:
     linear-gradient(90deg, rgba(5, 10, 18, .96) 0%, rgba(5, 10, 18, .78) 43%, rgba(5, 10, 18, .56) 100%),
     linear-gradient(0deg, rgba(5, 10, 18, .62), rgba(5, 10, 18, .08)),
-    url("https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=2400&q=90") center 42% / cover fixed,
+    url("https://images.unsplash.com/photo-1611304139630-427f59f865bd?auto=format&fit=crop&w=2400&q=90") center 42% / cover fixed,
     #080d15 !important;
 }
 .login-shell::before {
@@ -300,7 +300,7 @@
   .login-shell {
     background:
       linear-gradient(180deg, rgba(5,10,18,.78), rgba(5,10,18,.94) 55%, rgba(5,10,18,.98)),
-      url("https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1400&q=85") center top / auto 52rem no-repeat,
+      url("https://images.unsplash.com/photo-1611304139630-427f59f865bd?auto=format&fit=crop&w=1400&q=85") center top / auto 52rem no-repeat,
       #080d15 !important;
     background-attachment: scroll !important;
   }
