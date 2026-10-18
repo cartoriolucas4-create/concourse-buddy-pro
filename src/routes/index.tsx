@@ -65,30 +65,24 @@ export function QuestionPlatform() {
     catch(e:any){setError("Não foi possível enviar o relato: "+(e?.message||"erro desconhecido"));}
     finally{setReportBusy(false);}
   }
-  function sanitizeCommentHtml(html:string){
-    if(typeof html!=="string"||!html)return "";
-    // Sanitização sem depender de document.body/innerHTML do DOMParser:
-    // evita falha quando o parser não disponibiliza body durante a renderização.
-    const allowedTags=new Set(["b","strong","i","em","u","p","br","ul","ol","li","span"]);
-    const escapedText=(value:string)=>value.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-    return html.replace(/<!--[\s\S]*?-->/g,"").replace(/<\/?([a-zA-Z0-9-]+)([^>]*)>/g,(tag,name,attrs)=>{
-      const key=String(name).toLowerCase();
-      if(!allowedTags.has(key))return "";
-      if(tag.startsWith("</"))return key==="br"?"":`</${key}>`;
-      if(key==="br")return "<br>";
-      if(key!=="span")return `<${key}>`;
-      const color=String(attrs||"").match(/(?:color\s*:\s*)(#[0-9a-fA-F]{3,8}|rgba?\([0-9.,%\s]+\)|[a-zA-Z]+)/i)?.[1];
-      return color?`<span style="color:${color.replace(/["<>]/g,"")}">`:"<span>";
-    }).replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,"");
+  // Comentários em texto simples: não manipular innerHTML nem depender de DOMParser.
+  function sanitizeCommentHtml(value:string){return typeof value==="string"?value.replace(/\u0000/g,"").trim():"";}
+  async function updateStudentComment(comment:Row){
+    const content=sanitizeCommentHtml(editingCommentContent);
+    if(content.length<2){setError("Escreva um comentário com pelo menos 2 caracteres.");return;}
+    setCommentEditBusy(true);setError("");
+    try{await api("/rest/v1/student_question_comments?id=eq."+encodeURIComponent(comment.id)+"&student_id=eq."+encodeURIComponent(user?.id||""),token,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({content,updated_at:new Date().toISOString()})});setStudentComments(prev=>prev.map(c=>c.id===comment.id?{...c,content,updated_at:new Date().toISOString()}:c));setEditingCommentId("");setEditingCommentContent("");setNotice("Comentário atualizado.");}
+    catch(e:any){setError("Não foi possível editar o comentário: "+(e?.message||"erro desconhecido"));}finally{setCommentEditBusy(false);}
   }
-  const newCommentEditorRef=useRef<HTMLDivElement|null>(null); const editCommentEditorRef=useRef<HTMLDivElement|null>(null);
-  function commentCommand(command:string,value?:string,editing=false){
-    const editor=editing?editCommentEditorRef.current:newCommentEditorRef.current;
-    if(!editor)return;
-    editor.focus();
-    try{document.execCommand(command,false,value||undefined);}catch{}
-    if(editing)setEditingCommentContent(editor.innerHTML);else if(activeQuestion)setCommentDrafts(prev=>({...prev,[activeQuestion.id]:editor.innerHTML}));
+  async function submitStudentComment(q:Question){
+    const content=sanitizeCommentHtml(commentDrafts[q.id]||"");
+    if(content.length<2){setError("Escreva um comentário com pelo menos 2 caracteres.");return;}
+    if(!user?.id){setError("Entre na sua conta para comentar.");return;}
+    setCommentBusyQuestionId(q.id);setError("");
+    try{await api("/rest/v1/student_question_comments",token,{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({question_id:q.id,student_id:user.id,author_name:displayName||profile?.full_name||user.email||"Aluno",content})});setCommentDrafts(prev=>({...prev,[q.id]:""}));await loadData();setNotice("Comentário publicado na questão.");}
+    catch(e:any){setError("Não foi possível publicar o comentário: "+(e?.message||"erro desconhecido"));}finally{setCommentBusyQuestionId("");}
   }
+  function commentCommand(_command:string,_value?:string,_editing=false){ /* Editor simples, sem comandos DOM. */ }
   async function updateStudentComment(comment:Row){
     const content=sanitizeCommentHtml(editCommentEditorRef.current?.innerHTML||editingCommentContent);if(content.replace(/<[^>]*>/g,"").trim().length<2){setError("Escreva um comentário com pelo menos 2 caracteres.");return;}
     setCommentEditBusy(true);setError("");try{await api("/rest/v1/student_question_comments?id=eq."+comment.id+"&student_id=eq."+user?.id,token,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({content,updated_at:new Date().toISOString()})});setStudentComments(prev=>prev.map(c=>c.id===comment.id?{...c,content,updated_at:new Date().toISOString()}:c));setEditingCommentId("");setEditingCommentContent("");setNotice("Comentário atualizado.");}catch(e:any){setError("Não foi possível editar o comentário: "+(e?.message||"erro desconhecido"));}finally{setCommentEditBusy(false);}
