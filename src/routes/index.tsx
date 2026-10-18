@@ -83,17 +83,6 @@ export function QuestionPlatform() {
     catch(e:any){setError("Não foi possível publicar o comentário: "+(e?.message||"erro desconhecido"));}finally{setCommentBusyQuestionId("");}
   }
   function commentCommand(_command:string,_value?:string,_editing=false){ /* Editor simples, sem comandos DOM. */ }
-  async function updateStudentComment(comment:Row){
-    const content=sanitizeCommentHtml(editCommentEditorRef.current?.innerHTML||editingCommentContent);if(content.replace(/<[^>]*>/g,"").trim().length<2){setError("Escreva um comentário com pelo menos 2 caracteres.");return;}
-    setCommentEditBusy(true);setError("");try{await api("/rest/v1/student_question_comments?id=eq."+comment.id+"&student_id=eq."+user?.id,token,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({content,updated_at:new Date().toISOString()})});setStudentComments(prev=>prev.map(c=>c.id===comment.id?{...c,content,updated_at:new Date().toISOString()}:c));setEditingCommentId("");setEditingCommentContent("");setNotice("Comentário atualizado.");}catch(e:any){setError("Não foi possível editar o comentário: "+(e?.message||"erro desconhecido"));}finally{setCommentEditBusy(false);}
-  }
-  async function submitStudentComment(q:Question){
-    const content=sanitizeCommentHtml(commentDrafts[q.id]||"");if(content.replace(/<[^>]*>/g,"").trim().length<2){setError("Escreva um comentário com pelo menos 2 caracteres.");return;}
-    setCommentBusyQuestionId(q.id);setError("");
-    try{await api("/rest/v1/student_question_comments",token,{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({question_id:q.id,student_id:user?.id,author_name:displayName||profile?.full_name||user?.email||"Aluno",content})});setCommentDrafts(prev=>({...prev,[q.id]:""}));await loadData();setNotice("Comentário publicado na questão.");}
-    catch(e:any){setError("Não foi possível publicar o comentário: "+(e?.message||"erro desconhecido"));}
-    finally{setCommentBusyQuestionId("");}
-  }
   async function toggleCommentLike(comment:Row){
     const existing=commentLikes.find(l=>l.comment_id===comment.id&&l.student_id===user?.id);
     try{
