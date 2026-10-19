@@ -622,3 +622,60 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   .login-card { padding: .7rem .75rem !important; }
   .login-intro .login-feature { padding: .45rem !important; }
 }
+
+
+/* Mobile login cinematic: hero first, compact translucent form below. */
+@media (max-width: 767px) {
+  .login-shell {
+    min-height: 100svh !important;
+    background:
+      linear-gradient(180deg, rgba(3,8,14,.12) 0%, rgba(3,8,14,.08) 30%, rgba(3,8,14,.34) 53%, rgba(3,8,14,.72) 100%),
+      url("https://leb.fbi.gov/image-repository/police-swat-stock-1.jpg/@@images/image") center top / 100% 100svh no-repeat,
+      #070b11 !important;
+    background-attachment: scroll !important;
+  }
+  .login-shell > header { position:relative !important; z-index:2; padding:.75rem 1rem !important; background:linear-gradient(180deg,rgba(3,8,14,.58),transparent) !important; }
+  .login-shell main {
+    display:flex !important; flex-direction:column !important; align-items:stretch !important;
+    justify-content:flex-start !important; gap:.7rem !important;
+    padding:.4rem .9rem 1rem !important;
+  }
+  .login-intro { order:0 !important; padding:.8rem .65rem .6rem !important; background:transparent !important; border-radius:0 !important; text-shadow:0 2px 12px rgba(0,0,0,.9) !important; }
+  .login-intro > div:first-child { margin-bottom:.55rem !important; background:rgba(3,8,14,.24) !important; }
+  .login-intro h1 { font-size:clamp(2rem,9vw,2.8rem) !important; line-height:1.02 !important; }
+  .login-intro > p { margin-top:.55rem !important; color:#fff !important; font-size:.85rem !important; line-height:1.4rem !important; max-width:35rem !important; }
+  .login-intro .mt-9 { margin-top:.7rem !important; }
+  .login-intro .login-feature { padding:.55rem .65rem !important; background:rgba(4,9,16,.54) !important; border-color:rgba(255,255,255,.2) !important; backdrop-filter:blur(3px) !important; }
+  .login-intro .login-feature b { font-size:.75rem !important; }
+  .login-intro .login-feature p { font-size:.68rem !important; line-height:1.05rem !important; }
+  .login-card-wrap { order:1 !important; width:min(100%,21rem) !important; max-width:21rem !important; margin:.15rem auto 0 !important; }
+  .login-card {
+    padding:.8rem .9rem !important; border-radius:.85rem !important;
+    background:rgba(245,248,250,.76) !important;
+    border:1px solid rgba(255,255,255,.5) !important;
+    box-shadow:0 12px 32px rgba(0,0,0,.24) !important;
+    backdrop-filter:blur(9px) saturate(1.15) !important;
+  }
+  .login-card > div:first-child { margin-bottom:.55rem !important; }
+  .login-card > div:first-child > span { display:none !important; }
+  .login-card > div:first-child > p:first-of-type { margin-top:0 !important; font-size:.58rem !important; }
+  .login-card h2 { margin-top:.15rem !important; font-size:1.05rem !important; line-height:1.2 !important; }
+  .login-card > div:first-child > p:last-child { margin-top:.2rem !important; font-size:.68rem !important; line-height:1.05rem !important; }
+  .login-card label { margin-bottom:.45rem !important; font-size:.7rem !important; }
+  .login-input { height:2.1rem !important; min-height:2.1rem !important; margin-top:.2rem !important; padding:.4rem .6rem !important; font-size:.78rem !important; border-radius:.5rem !important; background:rgba(255,255,255,.88) !important; }
+  .login-submit { min-height:2.1rem !important; margin-top:.55rem !important; padding:.42rem .6rem !important; font-size:.74rem !important; border-radius:.5rem !important; }
+  .login-card .my-5 { margin:.45rem 0 !important; }
+  .login-card button[type="button"] { padding:.42rem .55rem !important; font-size:.67rem !important; border-radius:.5rem !important; }
+  .login-card > p:last-child { margin-top:.4rem !important; font-size:.59rem !important; line-height:.9rem !important; }
+  .login-card-wrap > div { margin-top:.35rem !important; font-size:.62rem !important; }
+  .login-shell footer { padding:.65rem 1rem max(.65rem,env(safe-area-inset-bottom)) !important; background:rgba(3,8,14,.55) !important; }
+}
+@media (max-width: 380px) {
+  .login-shell { background-position:center top !important; background-size:100% 100svh !important; }
+  .login-shell main { padding-left:.65rem !important; padding-right:.65rem !important; }
+  .login-intro { padding:.55rem .4rem .45rem !important; }
+  .login-intro h1 { font-size:1.85rem !important; }
+  .login-intro .login-feature { padding:.45rem !important; }
+  .login-card-wrap { width:min(100%,18.5rem) !important; max-width:18.5rem !important; }
+  .login-card { padding:.7rem .75rem !important; }
+}
