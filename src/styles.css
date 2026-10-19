@@ -679,3 +679,27 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   .login-card-wrap { width:min(100%,18.5rem) !important; max-width:18.5rem !important; }
   .login-card { padding:.7rem .75rem !important; }
 }
+
+
+/* Mobile-only operational hero: team/tactical scene fills the entire viewport. */
+@media (max-width: 767px) {
+  .login-shell {
+    min-height: 100svh !important;
+    background-color:#070b11 !important;
+    background-image:
+      linear-gradient(180deg, rgba(3,7,12,.18) 0%, rgba(3,7,12,.16) 34%, rgba(3,7,12,.42) 62%, rgba(3,7,12,.76) 100%),
+      url("https://files.nc.gov/dps/styles/event_image/public/images/2026-02/Tac%204.jpg?VersionId=y0sOxxj1kBxR.ZOaFmE6FHrH9XqggCgg&itok=AR_17pH8") !important;
+    background-position:center center !important;
+    background-size:cover !important;
+    background-repeat:no-repeat !important;
+    background-attachment:scroll !important;
+  }
+  .login-shell::after { display:none !important; }
+  .login-shell::before { opacity:.035 !important; }
+}
+@media (max-width: 767px) and (orientation: portrait) {
+  .login-shell {
+    background-position: 58% center !important;
+    background-size: cover !important;
+  }
+}
