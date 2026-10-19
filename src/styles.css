@@ -478,3 +478,53 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   button, a, [role="button"], input, select, textarea { transition:none !important; }
 }
+
+
+/* Ajustes finais da tela de login, priorizando o acesso no celular. */
+@media (max-width: 767px) {
+  .login-shell {
+    background:
+      linear-gradient(180deg, rgba(5,10,18,.22) 0%, rgba(5,10,18,.38) 24%, rgba(5,10,18,.78) 54%, #080d15 100%),
+      url("https://leb.fbi.gov/image-repository/police-swat-stock-1.jpg/@@images/image") center 18% / cover no-repeat,
+      #080d15 !important;
+    background-attachment: scroll !important;
+  }
+  .login-shell main {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 1.15rem !important;
+    padding-top: .5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+  .login-card-wrap {
+    order: -1 !important;
+    width: 100% !important;
+    max-width: 32rem !important;
+    margin: 0 auto !important;
+    animation: none !important;
+  }
+  .login-card {
+    padding: 1.15rem !important;
+    border: 1px solid rgba(255,255,255,.65) !important;
+    background: rgba(250,251,253,.97) !important;
+    box-shadow: 0 20px 55px rgba(0,0,0,.42), 0 0 0 1px rgba(255,255,255,.12) !important;
+    backdrop-filter: blur(12px);
+  }
+  .login-intro {
+    order: 1 !important;
+    position: relative;
+    padding: 1rem .25rem 1.25rem !important;
+    border-radius: 1.25rem;
+    background: linear-gradient(135deg, rgba(5,10,18,.62), rgba(5,10,18,.28)) !important;
+    text-shadow: 0 2px 14px rgba(0,0,0,.75);
+  }
+  .login-intro h1 { font-size: clamp(2.25rem, 10vw, 3.1rem) !important; }
+  .login-intro > p { color: #f1f5f9 !important; }
+  .login-intro .login-feature {
+    background: rgba(5,10,18,.78) !important;
+    border-color: rgba(229,190,115,.42) !important;
+    backdrop-filter: blur(8px);
+  }
+  .login-shell footer { margin-top: auto; }
+}
